@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'screens/registration_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/welcome_screen.dart';
 
 void main() {
   runApp(const PerpetuaApp());
@@ -18,9 +19,10 @@ class PerpetuaApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         fontFamily: 'Roboto',
       ),
-      home: const RegistrationScreen(),
+      home: const WelcomeScreen(),
       routes: {
         '/home': (context) => const HomeScreen(),
+        '/registration': (context) => const RegistrationScreen(),
       },
     );
   }

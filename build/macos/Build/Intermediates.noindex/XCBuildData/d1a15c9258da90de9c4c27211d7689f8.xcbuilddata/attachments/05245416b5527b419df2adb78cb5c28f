@@ -1,0 +1,29 @@
+{
+  "" : {
+    "diagnostics" : "/Users/talhaaymergen/Desktop/CS_310_Project/build/macos/Build/Intermediates.noindex/Pods.build/Debug/path_provider_foundation.build/Objects-normal/arm64/path_provider_foundation-primary.dia",
+    "emit-module-dependencies" : "/Users/talhaaymergen/Desktop/CS_310_Project/build/macos/Build/Intermediates.noindex/Pods.build/Debug/path_provider_foundation.build/Objects-normal/arm64/path_provider_foundation-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/talhaaymergen/Desktop/CS_310_Project/build/macos/Build/Intermediates.noindex/Pods.build/Debug/path_provider_foundation.build/Objects-normal/arm64/path_provider_foundation-primary-emit-module.dia",
+    "pch" : "/Users/talhaaymergen/Desktop/CS_310_Project/build/macos/Build/Intermediates.noindex/Pods.build/Debug/path_provider_foundation.build/Objects-normal/arm64/path_provider_foundation-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/talhaaymergen/Desktop/CS_310_Project/build/macos/Build/Intermediates.noindex/Pods.build/Debug/path_provider_foundation.build/Objects-normal/arm64/path_provider_foundation-primary.swiftdeps"
+  },
+  "/Users/talhaaymergen/.pub-cache/hosted/pub.dev/path_provider_foundation-2.4.4/darwin/path_provider_foundation/Sources/path_provider_foundation/PathProviderPlugin.swift" : {
+    "const-values" : "/Users/talhaaymergen/Desktop/CS_310_Project/build/macos/Build/Intermediates.noindex/Pods.build/Debug/path_provider_foundation.build/Objects-normal/arm64/PathProviderPlugin.swiftconstvalues",
+    "dependencies" : "/Users/talhaaymergen/Desktop/CS_310_Project/build/macos/Build/Intermediates.noindex/Pods.build/Debug/path_provider_foundation.build/Objects-normal/arm64/PathProviderPlugin.d",
+    "diagnostics" : "/Users/talhaaymergen/Desktop/CS_310_Project/build/macos/Build/Intermediates.noindex/Pods.build/Debug/path_provider_foundation.build/Objects-normal/arm64/PathProviderPlugin.dia",
+    "index-unit-output-path" : "/Pods.build/Debug/path_provider_foundation.build/Objects-normal/arm64/PathProviderPlugin.o",
+    "llvm-bc" : "/Users/talhaaymergen/Desktop/CS_310_Project/build/macos/Build/Intermediates.noindex/Pods.build/Debug/path_provider_foundation.build/Objects-normal/arm64/PathProviderPlugin.bc",
+    "object" : "/Users/talhaaymergen/Desktop/CS_310_Project/build/macos/Build/Intermediates.noindex/Pods.build/Debug/path_provider_foundation.build/Objects-normal/arm64/PathProviderPlugin.o",
+    "swift-dependencies" : "/Users/talhaaymergen/Desktop/CS_310_Project/build/macos/Build/Intermediates.noindex/Pods.build/Debug/path_provider_foundation.build/Objects-normal/arm64/PathProviderPlugin.swiftdeps",
+    "swiftmodule" : "/Users/talhaaymergen/Desktop/CS_310_Project/build/macos/Build/Intermediates.noindex/Pods.build/Debug/path_provider_foundation.build/Objects-normal/arm64/PathProviderPlugin~partial.swiftmodule"
+  },
+  "/Users/talhaaymergen/.pub-cache/hosted/pub.dev/path_provider_foundation-2.4.4/darwin/path_provider_foundation/Sources/path_provider_foundation/messages.g.swift" : {
+    "const-values" : "/Users/talhaaymergen/Desktop/CS_310_Project/build/macos/Build/Intermediates.noindex/Pods.build/Debug/path_provider_foundation.build/Objects-normal/arm64/messages.g.swiftconstvalues",
+    "dependencies" : "/Users/talhaaymergen/Desktop/CS_310_Project/build/macos/Build/Intermediates.noindex/Pods.build/Debug/path_provider_foundation.build/Objects-normal/arm64/messages.g.d",
+    "diagnostics" : "/Users/talhaaymergen/Desktop/CS_310_Project/build/macos/Build/Intermediates.noindex/Pods.build/Debug/path_provider_foundation.build/Objects-normal/arm64/messages.g.dia",
+    "index-unit-output-path" : "/Pods.build/Debug/path_provider_foundation.build/Objects-normal/arm64/messages.g.o",
+    "llvm-bc" : "/Users/talhaaymergen/Desktop/CS_310_Project/build/macos/Build/Intermediates.noindex/Pods.build/Debug/path_provider_foundation.build/Objects-normal/arm64/messages.g.bc",
+    "object" : "/Users/talhaaymergen/Desktop/CS_310_Project/build/macos/Build/Intermediates.noindex/Pods.build/Debug/path_provider_foundation.build/Objects-normal/arm64/messages.g.o",
+    "swift-dependencies" : "/Users/talhaaymergen/Desktop/CS_310_Project/build/macos/Build/Intermediates.noindex/Pods.build/Debug/path_provider_foundation.build/Objects-normal/arm64/messages.g.swiftdeps",
+    "swiftmodule" : "/Users/talhaaymergen/Desktop/CS_310_Project/build/macos/Build/Intermediates.noindex/Pods.build/Debug/path_provider_foundation.build/Objects-normal/arm64/messages.g~partial.swiftmodule"
+  }
+}
