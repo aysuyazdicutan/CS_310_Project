@@ -1,17 +1,25 @@
 import 'package:flutter/material.dart';
+import 'habit_detail_screen.dart';
+import 'streak_calendar_screen.dart';
 
 class Habit {
   final String id;
   final String name;
+  final String emoji;
   final int streak;
+  final int bestStreak;
   final bool isCompleted;
+  final Map<int, bool> completionHistory; // day number -> completed
 
   Habit({
     required this.id,
     required this.name,
+    required this.emoji,
     required this.streak,
+    this.bestStreak = 0,
     this.isCompleted = false,
-  });
+    Map<int, bool>? completionHistory,
+  }) : completionHistory = completionHistory ?? {};
 }
 
 class HomeScreen extends StatefulWidget {
@@ -24,10 +32,54 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
   List<Habit> _habits = [
-    Habit(id: '1', name: 'Morning Exercise', streak: 5),
-    Habit(id: '2', name: 'Read 30 Minutes', streak: 3),
-    Habit(id: '3', name: 'Meditation', streak: 7),
-    Habit(id: '4', name: 'Drink Water', streak: 2),
+    Habit(
+      id: '1',
+      name: 'Morning Exercise',
+      emoji: '💪',
+      streak: 5,
+      bestStreak: 10,
+      completionHistory: Map.fromIterable(
+        List.generate(28, (i) => i + 1),
+        key: (day) => day,
+        value: (day) => day <= 5, // First 5 days completed
+      ),
+    ),
+    Habit(
+      id: '2',
+      name: 'Read 30 Minutes',
+      emoji: '📚',
+      streak: 3,
+      bestStreak: 8,
+      completionHistory: Map.fromIterable(
+        List.generate(28, (i) => i + 1),
+        key: (day) => day,
+        value: (day) => day <= 3, // First 3 days completed
+      ),
+    ),
+    Habit(
+      id: '3',
+      name: 'Meditation',
+      emoji: '🧘',
+      streak: 7,
+      bestStreak: 15,
+      completionHistory: Map.fromIterable(
+        List.generate(28, (i) => i + 1),
+        key: (day) => day,
+        value: (day) => day <= 7, // First 7 days completed
+      ),
+    ),
+    Habit(
+      id: '4',
+      name: 'Drink Water',
+      emoji: '💧',
+      streak: 27,
+      bestStreak: 35,
+      completionHistory: Map.fromIterable(
+        List.generate(28, (i) => i + 1),
+        key: (day) => day,
+        value: (day) => true, // All 28 days completed (like in the image)
+      ),
+    ),
   ];
 
   String get _todayDate {
@@ -53,11 +105,21 @@ class _HomeScreenState extends State<HomeScreen> {
     setState(() {
       final habit = _habits.firstWhere((h) => h.id == id);
       final index = _habits.indexOf(habit);
+      final newCompletionHistory = Map<int, bool>.from(habit.completionHistory);
+      final today = DateTime.now().day;
+      newCompletionHistory[today] = !habit.isCompleted;
+      
+      final newStreak = habit.isCompleted ? habit.streak - 1 : habit.streak + 1;
+      final newBestStreak = newStreak > habit.bestStreak ? newStreak : habit.bestStreak;
+      
       _habits[index] = Habit(
         id: habit.id,
         name: habit.name,
-        streak: habit.isCompleted ? habit.streak : habit.streak + 1,
+        emoji: habit.emoji,
+        streak: newStreak,
+        bestStreak: newBestStreak,
         isCompleted: !habit.isCompleted,
+        completionHistory: newCompletionHistory,
       );
     });
   }
@@ -69,28 +131,34 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _navigateToHabitDetail(Habit habit) {
+    // Calculate statistics
+    // Last 7 days are days 22-28 in the calendar grid
+    final last7DaysCompleted = habit.completionHistory.entries
+        .where((e) => e.key > 21 && e.key <= 28 && e.value)
+        .length;
+    
+    // Last 30 days - count all completed days in the history
+    final last30DaysCompleted = habit.completionHistory.entries
+        .where((e) => e.value)
+        .length;
+    
+    // Total completions - sum of all completed days
+    final totalCompletions = habit.completionHistory.values
+        .where((v) => v)
+        .length;
+
     Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => Scaffold(
-          backgroundColor: const Color(0xFFE6F2FA),
-          appBar: AppBar(
-            backgroundColor: Colors.transparent,
-            elevation: 0,
-            leading: IconButton(
-              icon: const Icon(Icons.arrow_back, color: Color(0xFF2C3E50)),
-              onPressed: () => Navigator.pop(context),
-            ),
-          ),
-          body: Center(
-            child: Text(
-              'Habit Detail: ${habit.name}',
-              style: const TextStyle(
-                fontSize: 24,
-                color: Color(0xFF2C3E50),
-              ),
-            ),
-          ),
+        builder: (context) => HabitDetailScreen(
+          habitName: habit.name,
+          habitEmoji: habit.emoji,
+          currentStreak: habit.streak,
+          bestStreak: habit.bestStreak,
+          completionHistory: habit.completionHistory,
+          last7Days: last7DaysCompleted,
+          last30Days: last30DaysCompleted,
+          totalCompletions: totalCompletions,
         ),
       ),
     );
@@ -129,7 +197,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       Habit(
                         id: DateTime.now().millisecondsSinceEpoch.toString(),
                         name: nameController.text,
+                        emoji: '✨', // Default emoji for new habits
                         streak: 0,
+                        bestStreak: 0,
+                        completionHistory: {},
                       ),
                     );
                   });
@@ -293,18 +364,29 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ),
                                   ),
                                   const SizedBox(width: 16),
-                                  // Habit name
+                                  // Habit emoji and name
                                   Expanded(
-                                    child: Text(
-                                      habit.name,
-                                      style: TextStyle(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                        color: const Color(0xFF2C3E50),
-                                        decoration: habit.isCompleted
-                                            ? TextDecoration.lineThrough
-                                            : null,
-                                      ),
+                                    child: Row(
+                                      children: [
+                                        Text(
+                                          habit.emoji,
+                                          style: const TextStyle(fontSize: 24),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Text(
+                                            habit.name,
+                                            style: TextStyle(
+                                              fontSize: 16,
+                                              fontWeight: FontWeight.w600,
+                                              color: const Color(0xFF2C3E50),
+                                              decoration: habit.isCompleted
+                                                  ? TextDecoration.lineThrough
+                                                  : null,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
                                   ),
                                   // Streak indicator
@@ -369,6 +451,21 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.pushNamed(context, '/reminders');
             } else if (index == 1) {
               Navigator.pushNamed(context, '/statistics');
+            } else if (index == 2) {
+              // Navigate to Streak Calendar
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => StreakCalendarScreen(
+                    habits: _habits.map((habit) => {
+                      'id': habit.id,
+                      'name': habit.name,
+                      'emoji': habit.emoji,
+                      'completionHistory': habit.completionHistory,
+                    }).toList(),
+                  ),
+                ),
+              );
             }
             // Reset index after navigation
             Future.delayed(const Duration(milliseconds: 100), () {

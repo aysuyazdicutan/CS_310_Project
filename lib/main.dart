@@ -3,6 +3,7 @@ import 'screens/registration_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/reminders_screen.dart';
 import 'screens/statistics_screen.dart';
+import 'screens/streak_calendar_screen.dart';
 
 void main() {
   runApp(const PerpetuaApp());
