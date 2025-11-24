@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'screens/registration_screen.dart';
+import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/add_new_habit_screen.dart';
 import 'screens/reminders_screen.dart';
 import 'screens/statistics_screen.dart';
-import 'screens/streak_calendar_screen.dart';
 import 'screens/settings_screen.dart';
 import 'screens/profile_screen.dart';
 
@@ -23,9 +24,12 @@ class PerpetuaApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         fontFamily: 'Roboto',
       ),
-      home: const RegistrationScreen(),
+      initialRoute: '/login',
       routes: {
+        '/login': (context) => const LoginScreen(),
+        '/registration': (context) => const RegistrationScreen(),
         '/home': (context) => const HomeScreen(),
+        '/addHabit': (context) => const AddNewHabitScreen(),
         '/reminders': (context) => const RemindersScreen(),
         '/statistics': (context) => const StatisticsScreen(),
         '/settings': (context) => const SettingsScreen(),

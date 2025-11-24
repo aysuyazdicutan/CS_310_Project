@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'habit_detail_screen.dart';
 import 'streak_calendar_screen.dart';
-import 'settings_screen.dart';
-import 'profile_screen.dart';
 
 class Habit {
   final String id;
@@ -166,60 +164,6 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _addNewHabit() {
-    showDialog(
-      context: context,
-      builder: (context) {
-        final nameController = TextEditingController();
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: const Text('Add New Habit'),
-          content: TextField(
-            controller: nameController,
-            decoration: InputDecoration(
-              hintText: 'Enter habit name',
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                if (nameController.text.isNotEmpty) {
-                  setState(() {
-                    _habits.add(
-                      Habit(
-                        id: DateTime.now().millisecondsSinceEpoch.toString(),
-                        name: nameController.text,
-                        emoji: '✨', // Default emoji for new habits
-                        streak: 0,
-                        bestStreak: 0,
-                        completionHistory: {},
-                      ),
-                    );
-                  });
-                  Navigator.pop(context);
-                }
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF4A90E2),
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Add'),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -426,7 +370,23 @@ class _HomeScreenState extends State<HomeScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: FloatingActionButton(
-                onPressed: _addNewHabit,
+                onPressed: () async {
+                  final result = await Navigator.pushNamed(context, '/addHabit');
+                  if (result != null && result is Map<String, dynamic>) {
+                    setState(() {
+                      _habits.add(
+                        Habit(
+                          id: DateTime.now().millisecondsSinceEpoch.toString(),
+                          name: result['name'] as String,
+                          emoji: result['emoji'] as String,
+                          streak: 0,
+                          bestStreak: 0,
+                          completionHistory: {},
+                        ),
+                      );
+                    });
+                  }
+                },
                 backgroundColor: const Color(0xFF4A90E2),
                 child: const Icon(Icons.add, color: Colors.white),
               ),
