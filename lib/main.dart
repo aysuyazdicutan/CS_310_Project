@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'screens/registration_screen.dart';
 import 'screens/home_screen.dart';
+import 'screens/reminders_screen.dart';
+import 'screens/statistics_screen.dart';
 
 void main() {
   runApp(const PerpetuaApp());
@@ -21,6 +23,8 @@ class PerpetuaApp extends StatelessWidget {
       home: const RegistrationScreen(),
       routes: {
         '/home': (context) => const HomeScreen(),
+        '/reminders': (context) => const RemindersScreen(),
+        '/statistics': (context) => const StatisticsScreen(),
       },
     );
   }

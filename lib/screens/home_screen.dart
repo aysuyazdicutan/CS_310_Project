@@ -364,6 +364,20 @@ class _HomeScreenState extends State<HomeScreen> {
             setState(() {
               _selectedIndex = index;
             });
+            // Navigate to screens when tapping bottom nav items
+            if (index == 0) {
+              Navigator.pushNamed(context, '/reminders');
+            } else if (index == 1) {
+              Navigator.pushNamed(context, '/statistics');
+            }
+            // Reset index after navigation
+            Future.delayed(const Duration(milliseconds: 100), () {
+              if (mounted) {
+                setState(() {
+                  _selectedIndex = 0; // Reset to first item
+                });
+              }
+            });
           },
           type: BottomNavigationBarType.fixed,
           selectedItemColor: const Color(0xFF4A90E2),
