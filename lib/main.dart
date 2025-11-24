@@ -4,6 +4,8 @@ import 'screens/home_screen.dart';
 import 'screens/reminders_screen.dart';
 import 'screens/statistics_screen.dart';
 import 'screens/streak_calendar_screen.dart';
+import 'screens/settings_screen.dart';
+import 'screens/profile_screen.dart';
 
 void main() {
   runApp(const PerpetuaApp());
@@ -26,6 +28,8 @@ class PerpetuaApp extends StatelessWidget {
         '/home': (context) => const HomeScreen(),
         '/reminders': (context) => const RemindersScreen(),
         '/statistics': (context) => const StatisticsScreen(),
+        '/settings': (context) => const SettingsScreen(),
+        '/profile': (context) => const ProfileScreen(),
       },
     );
   }
