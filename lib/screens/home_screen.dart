@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'habit_detail_screen.dart';
 import 'streak_calendar_screen.dart';
+import 'settings_screen.dart';
+import 'profile_screen.dart';
 
 class Habit {
   final String id;
@@ -232,13 +234,18 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Text(
-                    'PROFILE',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF2C3E50),
-                      letterSpacing: 1.2,
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pushNamed(context, '/profile');
+                    },
+                    child: const Text(
+                      'PROFILE',
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF2C3E50),
+                        letterSpacing: 1.2,
+                      ),
                     ),
                   ),
                   Text(
@@ -466,6 +473,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               );
+            } else if (index == 3) {
+              Navigator.pushNamed(context, '/settings');
             }
             // Reset index after navigation
             Future.delayed(const Duration(milliseconds: 100), () {
