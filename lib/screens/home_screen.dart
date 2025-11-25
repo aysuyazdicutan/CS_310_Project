@@ -367,6 +367,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
             ),
             // Add button
+            const Text(
+              'Swipe left to delete',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w500,
+                color: Color(0xFF2C3E50),
+              ),
+            ),
+            const SizedBox(height: 8),
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 16),
               child: FloatingActionButton(

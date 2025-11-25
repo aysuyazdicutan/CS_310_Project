@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'personalization_screen.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -71,10 +70,7 @@ class WelcomeScreen extends StatelessWidget {
               // Custom Styled Button
               ElevatedButton(
                 onPressed: () {
-                   Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const PersonalizationScreen()),
-                  );
+                  Navigator.pushReplacementNamed(context, '/login');
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: const Color(0xFF4DD0E1), // Cyan
