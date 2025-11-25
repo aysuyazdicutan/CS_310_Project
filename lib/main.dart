@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
+// Your Imports
+import 'screens/welcome_screen.dart';
+import 'screens/personalization_screen.dart';
+// Friends' Imports
 import 'screens/registration_screen.dart';
-import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
-import 'screens/add_new_habit_screen.dart';
 import 'screens/reminders_screen.dart';
 import 'screens/statistics_screen.dart';
-import 'screens/settings_screen.dart';
-import 'screens/profile_screen.dart';
+import 'screens/streak_calendar_screen.dart';
 
 void main() {
   runApp(const PerpetuaApp());
@@ -24,18 +25,16 @@ class PerpetuaApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         fontFamily: 'Roboto',
       ),
-      initialRoute: '/login',
+      // App starts with your screen
+      home: const WelcomeScreen(),
+      
+      // All Routes
       routes: {
-        '/login': (context) => const LoginScreen(),
-        '/registration': (context) => const RegistrationScreen(),
         '/home': (context) => const HomeScreen(),
-        '/addHabit': (context) => const AddNewHabitScreen(),
+        '/registration': (context) => const RegistrationScreen(),
         '/reminders': (context) => const RemindersScreen(),
         '/statistics': (context) => const StatisticsScreen(),
-        '/settings': (context) => const SettingsScreen(),
-        '/profile': (context) => const ProfileScreen(),
       },
     );
   }
 }
-
