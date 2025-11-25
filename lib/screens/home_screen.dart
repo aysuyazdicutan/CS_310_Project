@@ -438,7 +438,22 @@ class _HomeScreenState extends State<HomeScreen> {
                     .toList(),
               );
             } else if (index == 1) {
-              Navigator.pushNamed(context, '/statistics');
+              Navigator.pushNamed(
+                context,
+                '/statistics',
+                arguments: _habits
+                    .map(
+                      (habit) => {
+                        'id': habit.id,
+                        'name': habit.name,
+                        'emoji': habit.emoji,
+                        'streak': habit.streak,
+                        'bestStreak': habit.bestStreak,
+                        'completionHistory': habit.completionHistory,
+                      },
+                    )
+                    .toList(),
+              );
             } else if (index == 2) {
               // Navigate to Streak Calendar
               Navigator.push(
