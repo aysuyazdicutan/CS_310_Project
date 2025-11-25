@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -124,7 +125,7 @@ class ProfileScreen extends StatelessWidget {
                     // Logout Button
                     GestureDetector(
                       onTap: () {
-                        // Handle logout (UI only, no backend)
+                        SystemNavigator.pop();
                       },
                       child: Container(
                         width: double.infinity,
