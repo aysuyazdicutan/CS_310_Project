@@ -51,7 +51,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
     if (_availableHabits.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Henüz eklenebilir bir habit yok.'),
+          content: Text('No habits available to add.'),
         ),
       );
       return;
@@ -85,7 +85,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                   ),
                 ),
                 const Text(
-                  'Habit Seç',
+                  'Select Habit',
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
@@ -149,7 +149,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
 
   Future<void> _editQuietHour({required bool isStart}) async {
     final result = await _promptForTime(
-      title: isStart ? 'Gece başlangıcı' : 'Gece bitişi',
+      title: isStart ? 'Night Start' : 'Night End',
       initialValue: isStart ? _quietStart : _quietEnd,
     );
     if (result != null) {
@@ -166,7 +166,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
   Future<void> _editReminderTime(int index) async {
     final current = _selectedReminders[index];
     final result = await _promptForTime(
-      title: '${current['name']} saati',
+      title: '${current['name']} time',
       initialValue: current['time'] as String,
     );
     if (result != null) {
@@ -211,7 +211,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Vazgeç'),
+              child: const Text('Cancel'),
             ),
             ElevatedButton(
               onPressed: () {
@@ -219,7 +219,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                 if (formatted == null) {
                   ScaffoldMessenger.of(rootContext).showSnackBar(
                     const SnackBar(
-                      content: Text('Lütfen HH.mm formatında geçerli bir saat girin.'),
+                      content: Text('Please enter a valid time in HH.mm format.'),
                     ),
                   );
                   return;
@@ -230,7 +230,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                 backgroundColor: const Color(0xFF6B46C1),
                 foregroundColor: Colors.white,
               ),
-              child: const Text('Kaydet'),
+              child: const Text('Save'),
             ),
           ],
         );
@@ -295,7 +295,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
               child: Container(
                 padding: const EdgeInsets.all(20.0),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF5F5DC),
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
                   boxShadow: [
                     BoxShadow(
@@ -349,7 +349,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                       padding: EdgeInsets.symmetric(horizontal: 40),
                       child: Center(
                         child: Text(
-                          'Henüz bir hatırlatma eklemedin. Aşağıdaki + ile habit seçebilirsin.',
+                          'You haven\'t added any reminders yet. Tap the + button below to select a habit.',
                           textAlign: TextAlign.center,
                           style: TextStyle(
                             fontSize: 16,
@@ -423,8 +423,11 @@ class _RemindersScreenState extends State<RemindersScreen> {
                                           vertical: 4,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: const Color(0xFFF5F5DC),
+                                          color: Colors.white,
                                           borderRadius: BorderRadius.circular(8),
+                                          border: Border.all(
+                                            color: const Color(0xFFE0E0E0),
+                                          ),
                                         ),
                                         child: Text(
                                           time,
@@ -501,10 +504,10 @@ class _QuietHourChip extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
-        color: const Color(0xFFF5F5DC),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: Colors.grey[300]!,
+          color: const Color(0xFFE0E0E0),
           width: 1,
         ),
       ),
