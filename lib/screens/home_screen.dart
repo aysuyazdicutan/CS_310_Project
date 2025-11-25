@@ -424,7 +424,19 @@ class _HomeScreenState extends State<HomeScreen> {
             });
             // Navigate to screens when tapping bottom nav items
             if (index == 0) {
-              Navigator.pushNamed(context, '/reminders');
+              Navigator.pushNamed(
+                context,
+                '/reminders',
+                arguments: _habits
+                    .map(
+                      (habit) => {
+                        'id': habit.id,
+                        'name': habit.name,
+                        'emoji': habit.emoji,
+                      },
+                    )
+                    .toList(),
+              );
             } else if (index == 1) {
               Navigator.pushNamed(context, '/statistics');
             } else if (index == 2) {
