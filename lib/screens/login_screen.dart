@@ -20,7 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _handleLogin() {
-    Navigator.pushReplacementNamed(context, '/home');
+    Navigator.pushReplacementNamed(context, '/personalization');
   }
 
   @override
