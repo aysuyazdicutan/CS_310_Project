@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 // Your Imports
+import 'screens/profile_screen.dart';
+import 'screens/settings_screen.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/personalization_screen.dart';
 // Friends' Imports
@@ -34,6 +36,8 @@ class PerpetuaApp extends StatelessWidget {
         '/registration': (context) => const RegistrationScreen(),
         '/reminders': (context) => const RemindersScreen(),
         '/statistics': (context) => const StatisticsScreen(),
+        '/profile': (context) => const ProfileScreen(),
+        '/settings': (context) => const SettingsScreen(),
       },
     );
   }
