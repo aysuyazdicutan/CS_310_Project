@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "181724732630",
+    "project_id": "cs310-project-cdf40",
+    "storage_bucket": "cs310-project-cdf40.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:181724732630:android:98c1c2b6c2f63250d5bd77",
+        "android_client_info": {
+          "package_name": "com.example.perpetua"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDewGtG9mS6OaGn1Etk2uiS5_t9ll8rx0A"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
