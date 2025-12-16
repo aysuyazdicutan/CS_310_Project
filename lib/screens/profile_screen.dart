@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
@@ -124,8 +126,17 @@ class ProfileScreen extends StatelessWidget {
                     const Spacer(),
                     // Logout Button
                     GestureDetector(
-                      onTap: () {
-                        SystemNavigator.pop();
+                      onTap: () async {
+                        // Trigger sign out via AuthProvider; AppRouter will react
+                        // and show the unauthenticated flow (Welcome/Login).
+                        final auth = context.read<AuthProvider>();
+                        final success = await auth.signOut();
+
+                        if (success) {
+                          // Pop all routes back to the root (AppRouter),
+                          // which will now show the login/welcome flow.
+                          Navigator.of(context).popUntil((route) => route.isFirst);
+                        }
                       },
                       child: Container(
                         width: double.infinity,
