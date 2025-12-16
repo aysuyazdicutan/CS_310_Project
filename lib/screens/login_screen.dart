@@ -47,10 +47,15 @@ class _LoginScreenState extends State<LoginScreen> {
     }
 
     final authProvider = context.read<AuthProvider>();
-    await authProvider.signIn(
+    final success = await authProvider.signIn(
       email: _emailController.text.trim(),
       password: _passwordController.text,
     );
+
+    // If login was successful, navigate to the home screen.
+    if (success && mounted) {
+      Navigator.pushReplacementNamed(context, '/home');
+    }
   }
 
   @override

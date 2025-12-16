@@ -63,10 +63,15 @@ class _SignUpScreenState extends State<SignUpScreen> {
     }
 
     final authProvider = context.read<AuthProvider>();
-    await authProvider.signUp(
+    final success = await authProvider.signUp(
       email: _emailController.text.trim(),
       password: _passwordController.text,
     );
+
+    // If sign up was successful, navigate to the home screen.
+    if (success && mounted) {
+      Navigator.pushReplacementNamed(context, '/home');
+    }
   }
 
   @override
