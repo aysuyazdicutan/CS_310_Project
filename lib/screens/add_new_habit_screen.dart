@@ -51,7 +51,6 @@ class _AddNewHabitScreenState extends State<AddNewHabitScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE6F2FA), // Light blue background
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,

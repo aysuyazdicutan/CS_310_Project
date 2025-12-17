@@ -14,12 +14,10 @@ class _PersonalizationScreenState extends State<PersonalizationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Renkleri moda göre belirliyoruz
-    final backgroundColor = _isDarkMode ? const Color(0xFF212121) : const Color(0xFFDCEFF5);
-    final textColor = _isDarkMode ? Colors.white : Colors.black;
+    final theme = Theme.of(context);
+    final textColor = theme.brightness == Brightness.dark ? Colors.white : Colors.black;
 
     return Scaffold(
-      backgroundColor: backgroundColor, // ARKA PLAN ARTIK DEĞİŞKEN
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
