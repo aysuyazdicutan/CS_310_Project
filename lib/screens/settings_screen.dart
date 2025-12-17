@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/settings_provider.dart';
 
 class SettingsScreen extends StatefulWidget {
   const SettingsScreen({super.key});
@@ -8,53 +10,16 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool _darkModeEnabled = true;
   bool _accessibilityModeEnabled = false;
   String _selectedLanguage = 'English';
 
-  Color get _backgroundColor =>
-      _darkModeEnabled ? const Color(0xFF0F172A) : const Color(0xFFE6F2FA);
-
-  Color get _cardColor =>
-      _darkModeEnabled ? const Color(0xFF1E293B) : Colors.white;
-
-  Color get _primaryTextColor =>
-      _darkModeEnabled ? Colors.white : const Color(0xFF2C3E50);
-
-  Color get _accentColor =>
-      _darkModeEnabled ? const Color(0xFF38BDF8) : const Color(0xFF4A90E2);
-
-  Color get _shadowColor =>
-      _darkModeEnabled ? Colors.black.withOpacity(0.25) : Colors.black.withOpacity(0.05);
-
-  Color get _iconBackgroundColor =>
-      _darkModeEnabled ? Colors.white.withOpacity(0.08) : const Color(0xFFADD8E6).withOpacity(0.3);
-
-  TextStyle get _headerTextStyle => TextStyle(
-        fontSize: 28,
-        fontWeight: FontWeight.w600,
-        fontStyle: FontStyle.italic,
-        color: _primaryTextColor,
-      );
-
-  TextStyle get _cardTitleStyle => TextStyle(
-        fontSize: 18,
-        fontWeight: FontWeight.w600,
-        fontStyle: FontStyle.italic,
-        color: _primaryTextColor,
-      );
-
-  TextStyle get _valueTextStyle => TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.w500,
-        fontStyle: FontStyle.italic,
-        color: _primaryTextColor,
-      );
-
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final settingsProvider = context.watch<SettingsProvider>();
+    final darkModeEnabled = settingsProvider.darkModeEnabled;
+    
     return Scaffold(
-      backgroundColor: _backgroundColor,
       body: SafeArea(
         child: Column(
           children: [
@@ -66,7 +31,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   IconButton(
                     icon: Icon(
                       Icons.arrow_back,
-                      color: _accentColor,
+                      color: theme.colorScheme.primary,
                       size: 28,
                     ),
                     onPressed: () => Navigator.pop(context),
@@ -75,7 +40,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     child: Text(
                       'Settings',
                       textAlign: TextAlign.center,
-                      style: _headerTextStyle,
+                      style: theme.textTheme.headlineLarge,
                     ),
                   ),
                   const SizedBox(width: 48), // Balance the back button
@@ -94,22 +59,20 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Dark Mode', style: _cardTitleStyle),
+                          Text('Dark Mode', style: theme.textTheme.titleLarge),
                           Switch(
-                            value: _darkModeEnabled,
+                            value: darkModeEnabled,
                             onChanged: (value) {
-                              setState(() {
-                                _darkModeEnabled = value;
-                              });
+                              settingsProvider.toggleDarkMode(value);
                             },
                             activeColor: Colors.white,
-                            activeTrackColor: _accentColor,
+                            activeTrackColor: theme.colorScheme.primary,
                             inactiveTrackColor: Colors.grey.withOpacity(0.4),
                             thumbColor:
                                 MaterialStateProperty.resolveWith<Color>(
                               (states) => states.contains(MaterialState.selected)
                                   ? Colors.white
-                                  : _primaryTextColor.withOpacity(0.6),
+                                  : theme.textTheme.titleLarge?.color?.withOpacity(0.6) ?? Colors.grey,
                             ),
                           ),
                         ],
@@ -122,18 +85,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Language', style: _cardTitleStyle),
+                          Text('Language', style: theme.textTheme.titleLarge),
                           Row(
                             children: [
                               Text(
                                 _selectedLanguage,
-                                style: _valueTextStyle,
+                                style: theme.textTheme.bodyLarge,
                               ),
                               const SizedBox(width: 8),
                               Icon(
                                 Icons.arrow_forward_ios,
                                 size: 16,
-                                color: _accentColor,
+                                color: theme.colorScheme.primary,
                               ),
                             ],
                           ),
@@ -146,7 +109,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Accessibility Mode', style: _cardTitleStyle),
+                          Text('Accessibility Mode', style: theme.textTheme.titleLarge),
                           Switch(
                             value: _accessibilityModeEnabled,
                             onChanged: (value) {
@@ -158,13 +121,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                               );
                             },
                             activeColor: Colors.white,
-                            activeTrackColor: _accentColor,
+                            activeTrackColor: theme.colorScheme.primary,
                             inactiveTrackColor: Colors.grey.withOpacity(0.4),
                             thumbColor:
                                 MaterialStateProperty.resolveWith<Color>(
                               (states) => states.contains(MaterialState.selected)
                                   ? Colors.white
-                                  : _primaryTextColor.withOpacity(0.6),
+                                  : theme.textTheme.titleLarge?.color?.withOpacity(0.6) ?? Colors.grey,
                             ),
                           ),
                         ],
@@ -177,16 +140,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('Backup & Export', style: _cardTitleStyle),
+                          Text('Backup & Export', style: theme.textTheme.titleLarge),
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: _iconBackgroundColor,
+                              color: theme.brightness == Brightness.dark
+                                  ? Colors.white.withOpacity(0.08)
+                                  : const Color(0xFFADD8E6).withOpacity(0.3),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
                               Icons.cloud_download,
-                              color: _accentColor,
+                              color: theme.colorScheme.primary,
                               size: 24,
                             ),
                           ),
@@ -200,16 +165,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text('About', style: _cardTitleStyle),
+                          Text('About', style: theme.textTheme.titleLarge),
                           Container(
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
-                              color: _iconBackgroundColor,
+                              color: theme.brightness == Brightness.dark
+                                  ? Colors.white.withOpacity(0.08)
+                                  : const Color(0xFFADD8E6).withOpacity(0.3),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
                               Icons.info_outline,
-                              color: _accentColor,
+                              color: theme.colorScheme.primary,
                               size: 24,
                             ),
                           ),
@@ -228,21 +195,24 @@ class _SettingsScreenState extends State<SettingsScreen> {
   }
 
   Widget _buildSettingCard({required Widget child, VoidCallback? onTap}) {
+    final theme = Theme.of(context);
     final borderRadius = BorderRadius.circular(16);
     return Material(
       color: Colors.transparent,
       child: InkWell(
         borderRadius: borderRadius,
         onTap: onTap,
-        splashColor: _accentColor.withOpacity(0.1),
+        splashColor: theme.colorScheme.primary.withOpacity(0.1),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           decoration: BoxDecoration(
-            color: _cardColor,
+            color: theme.cardColor,
             borderRadius: borderRadius,
             boxShadow: [
               BoxShadow(
-                color: _shadowColor,
+                color: theme.brightness == Brightness.dark
+                    ? Colors.black.withOpacity(0.25)
+                    : Colors.black.withOpacity(0.05),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),
@@ -293,7 +263,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   ),
                 ),
                 trailing: isSelected
-                    ? const Icon(Icons.check, color: Color(0xFF4A90E2))
+                    ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
                     : null,
                 onTap: () => Navigator.pop(context, language),
               );

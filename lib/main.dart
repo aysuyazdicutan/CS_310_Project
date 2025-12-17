@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
 import 'providers/habit_provider.dart';
+import 'providers/settings_provider.dart';
 // Your Imports
 import 'screens/profile_screen.dart';
 import 'screens/settings_screen.dart';
@@ -23,11 +24,17 @@ void main() async {
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  
+  // Initialize SettingsProvider and load preferences
+  final settingsProvider = SettingsProvider();
+  await settingsProvider.loadPreferences();
+  
   runApp(
     MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => HabitProvider()),
+        ChangeNotifierProvider.value(value: settingsProvider),
       ],
       child: const PerpetuaApp(),
     ),
@@ -39,13 +46,76 @@ class PerpetuaApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    return Consumer<SettingsProvider>(
+      builder: (context, settingsProvider, _) {
     return MaterialApp(
       title: 'Perpetua',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
         fontFamily: 'Roboto',
-      ),
+            brightness: Brightness.light,
+            scaffoldBackgroundColor: const Color(0xFFE6F2FA),
+            cardColor: Colors.white,
+            textTheme: const TextTheme(
+              headlineLarge: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w600,
+                fontStyle: FontStyle.italic,
+                color: Color(0xFF2C3E50),
+              ),
+              titleLarge: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                fontStyle: FontStyle.italic,
+                color: Color(0xFF2C3E50),
+              ),
+              bodyLarge: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                fontStyle: FontStyle.italic,
+                color: Color(0xFF2C3E50),
+              ),
+            ),
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF4A90E2),
+              secondary: Color(0xFF4A90E2),
+            ),
+          ),
+          darkTheme: ThemeData(
+            primarySwatch: Colors.blue,
+            fontFamily: 'Roboto',
+            brightness: Brightness.dark,
+            scaffoldBackgroundColor: const Color(0xFF0F172A),
+            cardColor: const Color(0xFF1E293B),
+            textTheme: const TextTheme(
+              headlineLarge: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w600,
+                fontStyle: FontStyle.italic,
+                color: Colors.white,
+              ),
+              titleLarge: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                fontStyle: FontStyle.italic,
+                color: Colors.white,
+              ),
+              bodyLarge: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w500,
+                fontStyle: FontStyle.italic,
+                color: Colors.white,
+              ),
+            ),
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFF38BDF8),
+              secondary: Color(0xFF38BDF8),
+            ),
+          ),
+          themeMode: settingsProvider.darkModeEnabled 
+              ? ThemeMode.dark 
+              : ThemeMode.light,
       // App-level router decides which flow to show based on auth state.
       home: const AppRouter(),
       routes: {
@@ -59,6 +129,8 @@ class PerpetuaApp extends StatelessWidget {
         '/statistics': (context) => const StatisticsScreen(),
         '/profile': (context) => const ProfileScreen(),
         '/settings': (context) => const SettingsScreen(),
+          },
+        );
       },
     );
   }

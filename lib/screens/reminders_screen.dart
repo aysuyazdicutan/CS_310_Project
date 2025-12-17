@@ -255,7 +255,6 @@ class _RemindersScreenState extends State<RemindersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFE6F2FA),
       body: SafeArea(
         child: Column(
           children: [
