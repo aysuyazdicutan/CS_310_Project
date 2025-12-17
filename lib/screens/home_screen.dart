@@ -1,26 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../models/habit.dart';
+import '../providers/habit_provider.dart';
+import '../providers/auth_provider.dart';
 import 'habit_detail_screen.dart';
 import 'streak_calendar_screen.dart';
-
-class Habit {
-  final String id;
-  final String name;
-  final String emoji;
-  final int streak;
-  final int bestStreak;
-  final bool isCompleted;
-  final Map<int, bool> completionHistory; // day number -> completed
-
-  Habit({
-    required this.id,
-    required this.name,
-    required this.emoji,
-    required this.streak,
-    this.bestStreak = 0,
-    this.isCompleted = false,
-    Map<int, bool>? completionHistory,
-  }) : completionHistory = completionHistory ?? {};
-}
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -31,56 +15,6 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _selectedIndex = 0;
-  List<Habit> _habits = [
-    Habit(
-      id: '1',
-      name: 'Morning Exercise',
-      emoji: '💪',
-      streak: 5,
-      bestStreak: 10,
-      completionHistory: Map.fromIterable(
-        List.generate(28, (i) => i + 1),
-        key: (day) => day,
-        value: (day) => day <= 5, // First 5 days completed
-      ),
-    ),
-    Habit(
-      id: '2',
-      name: 'Read 30 Minutes',
-      emoji: '📚',
-      streak: 3,
-      bestStreak: 8,
-      completionHistory: Map.fromIterable(
-        List.generate(28, (i) => i + 1),
-        key: (day) => day,
-        value: (day) => day <= 3, // First 3 days completed
-      ),
-    ),
-    Habit(
-      id: '3',
-      name: 'Meditation',
-      emoji: '🧘',
-      streak: 7,
-      bestStreak: 15,
-      completionHistory: Map.fromIterable(
-        List.generate(28, (i) => i + 1),
-        key: (day) => day,
-        value: (day) => day <= 7, // First 7 days completed
-      ),
-    ),
-    Habit(
-      id: '4',
-      name: 'Drink Water',
-      emoji: '💧',
-      streak: 27,
-      bestStreak: 35,
-      completionHistory: Map.fromIterable(
-        List.generate(28, (i) => i + 1),
-        key: (day) => day,
-        value: (day) => true, // All 28 days completed (like in the image)
-      ),
-    ),
-  ];
 
   String get _todayDate {
     final now = DateTime.now();
@@ -101,51 +35,100 @@ class _HomeScreenState extends State<HomeScreen> {
     return '${months[now.month - 1]} ${now.day}, ${now.year}';
   }
 
-  void _toggleHabit(String id) {
-    setState(() {
-      final habit = _habits.firstWhere((h) => h.id == id);
-      final index = _habits.indexOf(habit);
-      final newCompletionHistory = Map<int, bool>.from(habit.completionHistory);
-      final today = DateTime.now().day;
-      newCompletionHistory[today] = !habit.isCompleted;
-      
-      final newStreak = habit.isCompleted ? habit.streak - 1 : habit.streak + 1;
-      final newBestStreak = newStreak > habit.bestStreak ? newStreak : habit.bestStreak;
-      
-      _habits[index] = Habit(
-        id: habit.id,
-        name: habit.name,
-        emoji: habit.emoji,
-        streak: newStreak,
-        bestStreak: newBestStreak,
-        isCompleted: !habit.isCompleted,
-        completionHistory: newCompletionHistory,
-      );
-    });
+  void _toggleHabit(String id, HabitProvider habitProvider) async {
+    final habit = habitProvider.habits.firstWhere((h) => h.id == id);
+    final today = DateTime.now();
+    final todayKey = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    
+    final newCompletionHistory = Map<String, bool>.from(habit.completionHistory);
+    final wasCompleted = newCompletionHistory[todayKey] ?? false;
+    newCompletionHistory[todayKey] = !wasCompleted;
+    
+    // Calculate new streak
+    int newStreak = habit.streak;
+    if (!wasCompleted) {
+      // Marking as completed - increment streak
+      newStreak = habit.streak + 1;
+    } else {
+      // Unmarking - decrement streak (but not below 0)
+      newStreak = (habit.streak > 0) ? habit.streak - 1 : 0;
+    }
+    
+    final newBestStreak = newStreak > habit.bestStreak ? newStreak : habit.bestStreak;
+    
+    await habitProvider.updateHabit(
+      habitId: id,
+      isCompleted: !wasCompleted,
+      streak: newStreak,
+      bestStreak: newBestStreak,
+      completionHistory: newCompletionHistory,
+    );
   }
 
-  void _deleteHabit(String id) {
-    setState(() {
-      _habits.removeWhere((habit) => habit.id == id);
-    });
+  void _deleteHabit(String id, HabitProvider habitProvider) async {
+    final success = await habitProvider.deleteHabit(id);
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Habit deleted'),
+          duration: Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   void _navigateToHabitDetail(Habit habit) {
-    // Calculate statistics
-    // Last 7 days are days 22-28 in the calendar grid
+    // Calculate statistics from completionHistory (date string -> bool)
+    final now = DateTime.now();
+    final last7Days = <String>[];
+    for (int i = 0; i < 7; i++) {
+      final date = now.subtract(Duration(days: i));
+      final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      last7Days.add(dateKey);
+    }
+    
     final last7DaysCompleted = habit.completionHistory.entries
-        .where((e) => e.key > 21 && e.key <= 28 && e.value)
+        .where((e) => last7Days.contains(e.key) && e.value)
         .length;
     
-    // Last 30 days - count all completed days in the history
+    // Last 30 days
+    final last30Days = <String>[];
+    for (int i = 0; i < 30; i++) {
+      final date = now.subtract(Duration(days: i));
+      final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      last30Days.add(dateKey);
+    }
+    
     final last30DaysCompleted = habit.completionHistory.entries
-        .where((e) => e.value)
+        .where((e) => last30Days.contains(e.key) && e.value)
         .length;
     
-    // Total completions - sum of all completed days
+    // Total completions
     final totalCompletions = habit.completionHistory.values
         .where((v) => v)
         .length;
+
+    // Convert completionHistory to Map<int, bool> for HabitDetailScreen compatibility
+    // Using day of year as key
+    final completionHistoryInt = <int, bool>{};
+    habit.completionHistory.forEach((dateKey, completed) {
+      if (completed) {
+        try {
+          final parts = dateKey.split('-');
+          if (parts.length == 3) {
+            final date = DateTime(
+              int.parse(parts[0]),
+              int.parse(parts[1]),
+              int.parse(parts[2]),
+            );
+            final dayOfYear = date.difference(DateTime(date.year, 1, 1)).inDays + 1;
+            completionHistoryInt[dayOfYear] = true;
+          }
+        } catch (e) {
+          // Skip invalid dates
+        }
+      }
+    });
 
     Navigator.push(
       context,
@@ -155,7 +138,7 @@ class _HomeScreenState extends State<HomeScreen> {
           habitEmoji: habit.emoji,
           currentStreak: habit.streak,
           bestStreak: habit.bestStreak,
-          completionHistory: habit.completionHistory,
+          completionHistory: completionHistoryInt,
           last7Days: last7DaysCompleted,
           last30Days: last30DaysCompleted,
           totalCompletions: totalCompletions,
@@ -167,6 +150,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final habitProvider = context.watch<HabitProvider>();
+    final authProvider = context.watch<AuthProvider>();
+    final habits = habitProvider.habits;
+
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -228,21 +215,26 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             // Habits list
             Expanded(
-              child: _habits.isEmpty
-                  ? const Center(
-                      child: Text(
-                        'No habits yet. Add one!',
-                        style: TextStyle(
-                          fontSize: 16,
-                          color: Color(0xFF2C3E50),
-                        ),
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 20),
-                      itemCount: _habits.length,
-                      itemBuilder: (context, index) {
-                        final habit = _habits[index];
+              child: habitProvider.isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : habits.isEmpty
+                      ? const Center(
+                          child: Text(
+                            'No habits yet. Add one!',
+                            style: TextStyle(
+                              fontSize: 16,
+                              color: Color(0xFF2C3E50),
+                            ),
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          itemCount: habits.length,
+                          itemBuilder: (context, index) {
+                            final habit = habits[index];
+                            final today = DateTime.now();
+                            final todayKey = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+                            final isCompleted = habit.completionHistory[todayKey] ?? false;
                         return Dismissible(
                           key: Key(habit.id),
                           direction: DismissDirection.endToStart,
@@ -260,13 +252,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           onDismissed: (direction) {
-                            _deleteHabit(habit.id);
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text('${habit.name} deleted'),
-                                duration: const Duration(seconds: 2),
-                              ),
-                            );
+                            _deleteHabit(habit.id, habitProvider);
                           },
                           child: GestureDetector(
                             onTap: () => _navigateToHabitDetail(habit),
@@ -288,23 +274,23 @@ class _HomeScreenState extends State<HomeScreen> {
                                 children: [
                                   // Toggle icon
                                   GestureDetector(
-                                    onTap: () => _toggleHabit(habit.id),
+                                    onTap: () => _toggleHabit(habit.id, habitProvider),
                                     child: Container(
                                       width: 40,
                                       height: 40,
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
-                                        color: habit.isCompleted
+                                        color: isCompleted
                                             ? const Color(0xFF4A90E2)
                                             : Colors.grey[200],
                                         border: Border.all(
-                                          color: habit.isCompleted
+                                          color: isCompleted
                                               ? const Color(0xFF4A90E2)
                                               : Colors.grey[400]!,
                                           width: 2,
                                         ),
                                       ),
-                                      child: habit.isCompleted
+                                      child: isCompleted
                                           ? const Icon(
                                               Icons.check,
                                               color: Colors.white,
@@ -330,7 +316,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                               fontSize: 16,
                                               fontWeight: FontWeight.w600,
                                               color: const Color(0xFF2C3E50),
-                                              decoration: habit.isCompleted
+                                              decoration: isCompleted
                                                   ? TextDecoration.lineThrough
                                                   : null,
                                             ),
@@ -380,19 +366,21 @@ class _HomeScreenState extends State<HomeScreen> {
               child: FloatingActionButton(
                 onPressed: () async {
                   final result = await Navigator.pushNamed(context, '/addHabit');
-                  if (result != null && result is Map<String, dynamic>) {
-                    setState(() {
-                      _habits.add(
-                        Habit(
-                          id: DateTime.now().millisecondsSinceEpoch.toString(),
-                          name: result['name'] as String,
-                          emoji: result['emoji'] as String,
-                          streak: 0,
-                          bestStreak: 0,
-                          completionHistory: {},
+                  if (result != null && result is Map<String, dynamic> && authProvider.user != null) {
+                    final success = await habitProvider.createHabit(
+                      title: result['name'] as String,
+                      description: '',
+                      userId: authProvider.user!.uid,
+                      emoji: result['emoji'] as String,
+                    );
+                    if (!success && mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(habitProvider.errorMessage ?? 'Failed to create habit'),
+                          duration: const Duration(seconds: 2),
                         ),
                       );
-                    });
+                    }
                   }
                 },
                 backgroundColor: const Color(0xFF4A90E2),
@@ -426,7 +414,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.pushNamed(
                 context,
                 '/reminders',
-                arguments: _habits
+                arguments: habits
                     .map(
                       (habit) => {
                         'id': habit.id,
@@ -440,7 +428,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Navigator.pushNamed(
                 context,
                 '/statistics',
-                arguments: _habits
+                arguments: habits
                     .map(
                       (habit) => {
                         'id': habit.id,
@@ -455,15 +443,37 @@ class _HomeScreenState extends State<HomeScreen> {
               );
             } else if (index == 2) {
               // Navigate to Streak Calendar
+              // Convert completionHistory from Map<String, bool> to Map<int, bool> for compatibility
               Navigator.push(
                 context,
                 MaterialPageRoute(
                   builder: (context) => StreakCalendarScreen(
-                    habits: _habits.map((habit) => {
-                      'id': habit.id,
-                      'name': habit.name,
-                      'emoji': habit.emoji,
-                      'completionHistory': habit.completionHistory,
+                    habits: habits.map((habit) {
+                      final historyInt = <int, bool>{};
+                      habit.completionHistory.forEach((dateKey, completed) {
+                        if (completed) {
+                          try {
+                            final parts = dateKey.split('-');
+                            if (parts.length == 3) {
+                              final date = DateTime(
+                                int.parse(parts[0]),
+                                int.parse(parts[1]),
+                                int.parse(parts[2]),
+                              );
+                              final dayOfYear = date.difference(DateTime(date.year, 1, 1)).inDays + 1;
+                              historyInt[dayOfYear] = true;
+                            }
+                          } catch (e) {
+                            // Skip invalid dates
+                          }
+                        }
+                      });
+                      return {
+                        'id': habit.id,
+                        'name': habit.name,
+                        'emoji': habit.emoji,
+                        'completionHistory': historyInt,
+                      };
                     }).toList(),
                   ),
                 ),

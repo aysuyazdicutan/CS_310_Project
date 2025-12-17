@@ -1,9 +1,11 @@
+import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import '../services/auth_service.dart';
 
 class AuthProvider extends ChangeNotifier {
   final AuthService _authService = AuthService();
+  StreamSubscription<User?>? _authStateSubscription;
 
   User? _user;
   bool _isLoading = false;
@@ -18,10 +20,16 @@ class AuthProvider extends ChangeNotifier {
     _user = _authService.currentUser;
     
     // Listen to auth state changes and update user
-    _authService.authStateChanges.listen((User? user) {
+    _authStateSubscription = _authService.authStateChanges.listen((User? user) {
       _user = user;
       notifyListeners();
     });
+  }
+
+  @override
+  void dispose() {
+    _authStateSubscription?.cancel();
+    super.dispose();
   }
 
   /// Sign up with email and password
