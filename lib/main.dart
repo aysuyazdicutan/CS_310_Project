@@ -137,12 +137,20 @@ class PerpetuaApp extends StatelessWidget {
 }
 
 /// Top-level widget that reacts to authentication state.
-class AppRouter extends StatelessWidget {
+class AppRouter extends StatefulWidget {
   const AppRouter({super.key});
+
+  @override
+  State<AppRouter> createState() => _AppRouterState();
+}
+
+class _AppRouterState extends State<AppRouter> {
+  String? _initializedUserId;
 
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    final habitProvider = context.read<HabitProvider>();
 
     // While auth is initializing or performing an action, show a simple loader.
     if (auth.isLoading) {
@@ -154,10 +162,17 @@ class AppRouter extends StatelessWidget {
     // If there is no authenticated user, show the login / signup flow.
     // `WelcomeScreen` is assumed to navigate to Login / Signup screens.
     if (auth.user == null) {
+      _initializedUserId = null;
       return const WelcomeScreen();
     }
 
-    // If the user is authenticated, show the main app (home screen).
+    // If the user is authenticated, initialize habits (only once per user)
+    final userId = auth.user!.uid;
+    if (_initializedUserId != userId) {
+      _initializedUserId = userId;
+      habitProvider.initialize(userId);
+    }
+
     return const HomeScreen();
   }
 }
