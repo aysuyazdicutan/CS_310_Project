@@ -18,11 +18,11 @@ class HabitProvider extends ChangeNotifier {
 
   /// Initialize and start listening to habits for a user
   void initialize(String userId) {
-    _setLoading(true);
-    _clearError();
-
     // Cancel existing subscription if any
     _habitsSubscription?.cancel();
+
+    _setLoading(true);
+    _clearError();
 
     // Listen to real-time updates from Firestore
     _habitsSubscription = _habitService.getHabitsStream(userId).listen(
@@ -36,6 +36,7 @@ class HabitProvider extends ChangeNotifier {
         _setLoading(false);
         notifyListeners();
       },
+      cancelOnError: false, // Keep listening even if there's an error
     );
   }
 
@@ -46,21 +47,27 @@ class HabitProvider extends ChangeNotifier {
     required String userId,
     String emoji = '✨',
   }) async {
-    _setLoading(true);
     _clearError();
 
     try {
+      // Ensure stream is initialized before creating habit
+      if (_habitsSubscription == null) {
+        initialize(userId);
+        // Wait a bit for stream to be ready
+        await Future.delayed(const Duration(milliseconds: 100));
+      }
+      
       await _habitService.createHabit(
         title: title,
         description: description,
         userId: userId,
         emoji: emoji,
       );
-      _setLoading(false);
+      // Don't set loading state here - the stream will automatically update
+      // when the new habit is added to Firestore
       return true;
     } catch (e) {
       _setError(e.toString());
-      _setLoading(false);
       return false;
     }
   }
@@ -92,7 +99,6 @@ class HabitProvider extends ChangeNotifier {
     int? bestStreak,
     Map<String, bool>? completionHistory,
   }) async {
-    _setLoading(true);
     _clearError();
 
     try {
@@ -106,27 +112,26 @@ class HabitProvider extends ChangeNotifier {
         bestStreak: bestStreak,
         completionHistory: completionHistory,
       );
-      _setLoading(false);
+      // Don't set loading state here - the stream will automatically update
+      // when the habit is updated in Firestore
       return true;
     } catch (e) {
       _setError(e.toString());
-      _setLoading(false);
       return false;
     }
   }
 
   /// Delete: Remove a habit
   Future<bool> deleteHabit(String habitId) async {
-    _setLoading(true);
     _clearError();
 
     try {
       await _habitService.deleteHabit(habitId);
-      _setLoading(false);
+      // Don't set loading state here - the stream will automatically update
+      // when the habit is deleted from Firestore
       return true;
     } catch (e) {
       _setError(e.toString());
-      _setLoading(false);
       return false;
     }
   }

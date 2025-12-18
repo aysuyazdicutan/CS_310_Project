@@ -218,17 +218,64 @@ class _HomeScreenState extends State<HomeScreen> {
             Expanded(
               child: habitProvider.isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : habits.isEmpty
-                      ? const Center(
-                          child: Text(
-                            'No habits yet. Add one!',
-                            style: TextStyle(
-                              fontSize: 16,
-                              color: Color(0xFF2C3E50),
+                  : habitProvider.errorMessage != null
+                      ? Center(
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Icon(
+                                  Icons.error_outline,
+                                  size: 48,
+                                  color: Colors.red,
+                                ),
+                                const SizedBox(height: 16),
+                                const Text(
+                                  'Error loading habits',
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.w600,
+                                    color: Color(0xFF2C3E50),
+                                  ),
+                                ),
+                                const SizedBox(height: 8),
+                                Text(
+                                  habitProvider.errorMessage!,
+                                  textAlign: TextAlign.center,
+                                  style: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.grey[600],
+                                  ),
+                                ),
+                                const SizedBox(height: 16),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    if (authProvider.user != null) {
+                                      habitProvider.initialize(authProvider.user!.uid);
+                                    }
+                                  },
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: const Color(0xFF4A90E2),
+                                    foregroundColor: Colors.white,
+                                  ),
+                                  child: const Text('Retry'),
+                                ),
+                              ],
                             ),
                           ),
                         )
-                      : ListView.builder(
+                      : habits.isEmpty
+                          ? const Center(
+                              child: Text(
+                                'No habits yet. Add one!',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Color(0xFF2C3E50),
+                                ),
+                              ),
+                            )
+                          : ListView.builder(
                           padding: const EdgeInsets.symmetric(horizontal: 20),
                           itemCount: habits.length,
                           itemBuilder: (context, index) {

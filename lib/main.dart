@@ -160,7 +160,6 @@ class _AppRouterState extends State<AppRouter> {
     }
 
     // If there is no authenticated user, show the login / signup flow.
-    // `WelcomeScreen` is assumed to navigate to Login / Signup screens.
     if (auth.user == null) {
       _initializedUserId = null;
       return const WelcomeScreen();
@@ -170,9 +169,15 @@ class _AppRouterState extends State<AppRouter> {
     final userId = auth.user!.uid;
     if (_initializedUserId != userId) {
       _initializedUserId = userId;
-      habitProvider.initialize(userId);
+      // Initialize habits stream for this user after build completes
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted && _initializedUserId == userId) {
+          habitProvider.initialize(userId);
+        }
+      });
     }
 
+    // If the user is authenticated, show home screen
     return const HomeScreen();
   }
 }
