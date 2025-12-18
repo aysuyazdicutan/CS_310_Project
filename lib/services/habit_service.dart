@@ -28,7 +28,7 @@ class HabitService {
         'description': description,
         'isCompleted': false,
         'createdBy': userId,
-        'createdAt': FieldValue.serverTimestamp(),
+        'createdAt': Timestamp.now(), // Use client timestamp for immediate stream updates
         'emoji': emoji,
         'streak': 0,
         'bestStreak': 0,
