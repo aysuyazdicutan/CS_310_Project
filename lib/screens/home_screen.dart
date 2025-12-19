@@ -36,6 +36,79 @@ class _HomeScreenState extends State<HomeScreen> {
     return '${months[now.month - 1]} ${now.day}, ${now.year}';
   }
 
+  int _calculateStreak(Map<String, bool> completionHistory) {
+    if (completionHistory.isEmpty) return 0;
+    
+    final today = DateTime.now();
+    final todayKey = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    
+    if (completionHistory[todayKey] != true) {
+      return 0;
+    }
+    
+    int streak = 1;
+    
+    for (int i = 1; i < 365; i++) {
+      final date = today.subtract(Duration(days: i));
+      final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      
+      if (completionHistory[dateKey] == true) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    
+    return streak;
+  }
+
+  int _calculateBestStreak(Map<String, bool> completionHistory) {
+    if (completionHistory.isEmpty) return 0;
+    
+    final completedDates = <DateTime>[];
+    
+    completionHistory.forEach((dateKey, completed) {
+      if (completed == true) {
+        try {
+          final parts = dateKey.split('-');
+          if (parts.length == 3) {
+            final date = DateTime(
+              int.parse(parts[0]),
+              int.parse(parts[1]),
+              int.parse(parts[2]),
+            );
+            completedDates.add(date);
+          }
+        } catch (e) {
+          // Skip invalid dates
+        }
+      }
+    });
+    
+    if (completedDates.isEmpty) return 0;
+    
+    completedDates.sort((a, b) => b.compareTo(a));
+    
+    int maxStreak = 0;
+    int currentStreak = 1;
+    
+    for (int i = 0; i < completedDates.length - 1; i++) {
+      final currentDate = completedDates[i];
+      final nextDate = completedDates[i + 1];
+      final daysDiff = currentDate.difference(nextDate).inDays;
+      
+      if (daysDiff == 1) {
+        currentStreak++;
+      } else {
+        maxStreak = currentStreak > maxStreak ? currentStreak : maxStreak;
+        currentStreak = 1;
+      }
+    }
+    
+    maxStreak = currentStreak > maxStreak ? currentStreak : maxStreak;
+    return maxStreak;
+  }
+
   void _toggleHabit(String id, HabitProvider habitProvider) async {
     final habit = habitProvider.habits.firstWhere((h) => h.id == id);
     final today = DateTime.now();
@@ -45,23 +118,15 @@ class _HomeScreenState extends State<HomeScreen> {
     final wasCompleted = newCompletionHistory[todayKey] ?? false;
     newCompletionHistory[todayKey] = !wasCompleted;
     
-    // Calculate new streak
-    int newStreak = habit.streak;
-    if (!wasCompleted) {
-      // Marking as completed - increment streak
-      newStreak = habit.streak + 1;
-    } else {
-      // Unmarking - decrement streak (but not below 0)
-      newStreak = (habit.streak > 0) ? habit.streak - 1 : 0;
-    }
-    
-    final newBestStreak = newStreak > habit.bestStreak ? newStreak : habit.bestStreak;
+    final newStreak = _calculateStreak(newCompletionHistory);
+    final newBestStreak = _calculateBestStreak(newCompletionHistory);
+    final finalBestStreak = newBestStreak > habit.bestStreak ? newBestStreak : habit.bestStreak;
     
     await habitProvider.updateHabit(
       habitId: id,
       isCompleted: !wasCompleted,
       streak: newStreak,
-      bestStreak: newBestStreak,
+      bestStreak: finalBestStreak,
       completionHistory: newCompletionHistory,
     );
   }
@@ -79,70 +144,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _navigateToHabitDetail(Habit habit) {
-    // Calculate statistics from completionHistory (date string -> bool)
-    final now = DateTime.now();
-    final last7Days = <String>[];
-    for (int i = 0; i < 7; i++) {
-      final date = now.subtract(Duration(days: i));
-      final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-      last7Days.add(dateKey);
-    }
-    
-    final last7DaysCompleted = habit.completionHistory.entries
-        .where((e) => last7Days.contains(e.key) && e.value)
-        .length;
-    
-    // Last 30 days
-    final last30Days = <String>[];
-    for (int i = 0; i < 30; i++) {
-      final date = now.subtract(Duration(days: i));
-      final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
-      last30Days.add(dateKey);
-    }
-    
-    final last30DaysCompleted = habit.completionHistory.entries
-        .where((e) => last30Days.contains(e.key) && e.value)
-        .length;
-    
-    // Total completions
-    final totalCompletions = habit.completionHistory.values
-        .where((v) => v)
-        .length;
-
-    // Convert completionHistory to Map<int, bool> for HabitDetailScreen compatibility
-    // Using day of year as key
-    final completionHistoryInt = <int, bool>{};
-    habit.completionHistory.forEach((dateKey, completed) {
-      if (completed) {
-        try {
-          final parts = dateKey.split('-');
-          if (parts.length == 3) {
-            final date = DateTime(
-              int.parse(parts[0]),
-              int.parse(parts[1]),
-              int.parse(parts[2]),
-            );
-            final dayOfYear = date.difference(DateTime(date.year, 1, 1)).inDays + 1;
-            completionHistoryInt[dayOfYear] = true;
-          }
-        } catch (e) {
-          // Skip invalid dates
-        }
-      }
-    });
-
     Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => HabitDetailScreen(
-          habitName: habit.name,
-          habitEmoji: habit.emoji,
-          currentStreak: habit.streak,
-          bestStreak: habit.bestStreak,
-          completionHistory: completionHistoryInt,
-          last7Days: last7DaysCompleted,
-          last30Days: last30DaysCompleted,
-          totalCompletions: totalCompletions,
+          habitId: habit.id,
         ),
       ),
     );
@@ -473,57 +479,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     .toList(),
               );
             } else if (index == 1) {
-              Navigator.pushNamed(
-                context,
-                '/statistics',
-                arguments: habits
-                    .map(
-                      (habit) => {
-                        'id': habit.id,
-                        'name': habit.name,
-                        'emoji': habit.emoji,
-                        'streak': habit.streak,
-                        'bestStreak': habit.bestStreak,
-                        'completionHistory': habit.completionHistory,
-                      },
-                    )
-                    .toList(),
-              );
+              // Statistics screen now uses Provider to get real-time habit data
+              Navigator.pushNamed(context, '/statistics');
             } else if (index == 2) {
               // Navigate to Streak Calendar
-              // Convert completionHistory from Map<String, bool> to Map<int, bool> for compatibility
+              // StreakCalendarScreen now uses Provider to get real-time habit data
               Navigator.push(
                 context,
                 MaterialPageRoute(
-                  builder: (context) => StreakCalendarScreen(
-                    habits: habits.map((habit) {
-                      final historyInt = <int, bool>{};
-                      habit.completionHistory.forEach((dateKey, completed) {
-                        if (completed) {
-                          try {
-                            final parts = dateKey.split('-');
-                            if (parts.length == 3) {
-                              final date = DateTime(
-                                int.parse(parts[0]),
-                                int.parse(parts[1]),
-                                int.parse(parts[2]),
-                              );
-                              final dayOfYear = date.difference(DateTime(date.year, 1, 1)).inDays + 1;
-                              historyInt[dayOfYear] = true;
-                            }
-                          } catch (e) {
-                            // Skip invalid dates
-                          }
-                        }
-                      });
-                      return {
-                        'id': habit.id,
-                        'name': habit.name,
-                        'emoji': habit.emoji,
-                        'completionHistory': historyInt,
-                      };
-                    }).toList(),
-                  ),
+                  builder: (context) => const StreakCalendarScreen(),
                 ),
               );
             } else if (index == 3) {

@@ -1,13 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/habit_provider.dart';
 import 'habit_selection_screen.dart';
 
 class StreakCalendarScreen extends StatefulWidget {
-  final List<Map<String, dynamic>> habits; // List of habits with their completion history
-
-  const StreakCalendarScreen({
-    super.key,
-    required this.habits,
-  });
+  const StreakCalendarScreen({super.key});
 
   @override
   State<StreakCalendarScreen> createState() => _StreakCalendarScreenState();
@@ -58,7 +55,7 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
     return ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
   }
 
-  List<Widget> _buildCalendarDays() {
+  List<Widget> _buildCalendarDays(List<Map<String, dynamic>> habits) {
     final firstDayOfMonth = DateTime(_currentDate.year, _currentDate.month, 1);
     final lastDayOfMonth = DateTime(_currentDate.year, _currentDate.month + 1, 0);
     final daysInMonth = lastDayOfMonth.day;
@@ -86,7 +83,7 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
     // Add day cells
     for (int day = 1; day <= daysInMonth; day++) {
       final dayNumber = day;
-      final completedHabits = _getCompletedHabitsForDay(dayNumber);
+      final completedHabits = _getCompletedHabitsForDay(dayNumber, habits);
       
       days.add(
         Container(
@@ -135,14 +132,27 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
     return days;
   }
 
-  List<String> _getCompletedHabitsForDay(int day) {
+  List<String> _getCompletedHabitsForDay(int day, List<Map<String, dynamic>> habits) {
     List<String> emojis = [];
-    for (var habit in widget.habits) {
+    final dateKey = '${_currentDate.year}-${_currentDate.month.toString().padLeft(2, '0')}-${day.toString().padLeft(2, '0')}';
+    
+    for (var habit in habits) {
       final habitId = habit['id'] as String;
       // If no habits are selected, show all. Otherwise, only show selected habits.
       if (_selectedHabitIds.isEmpty || _selectedHabitIds.contains(habitId)) {
-        final completionHistory = habit['completionHistory'] as Map<int, bool>?;
-        if (completionHistory != null && (completionHistory[day] ?? false)) {
+        // completionHistory can be either Map<String, bool> (date format) or Map<int, bool> (legacy)
+        final completionHistory = habit['completionHistory'];
+        
+        bool isCompleted = false;
+        if (completionHistory is Map<String, dynamic>) {
+          // New format: Map<String, bool> with date keys like "2025-12-19"
+          isCompleted = (completionHistory[dateKey] == true);
+        } else if (completionHistory is Map<int, bool>) {
+          // Legacy format: Map<int, bool> with day numbers
+          isCompleted = (completionHistory[day] ?? false);
+        }
+        
+        if (isCompleted) {
           emojis.add(habit['emoji'] as String);
         }
       }
@@ -152,6 +162,16 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final habitProvider = context.watch<HabitProvider>();
+    final habits = habitProvider.habits.map((habit) {
+      return {
+        'id': habit.id,
+        'name': habit.name,
+        'emoji': habit.emoji,
+        'completionHistory': habit.completionHistory,
+      };
+    }).toList();
+    
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
@@ -197,10 +217,14 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
                   children: [
                     GestureDetector(
                       onTap: _previousMonth,
-                      child: const Icon(
-                        Icons.arrow_back_ios,
-                        color: Color(0xFF9B59B6),
-                        size: 20,
+                      child: const Text(
+                        '<',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF9B59B6),
+                          fontFamily: 'Roboto',
+                        ),
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -216,10 +240,14 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
                     const SizedBox(width: 16),
                     GestureDetector(
                       onTap: _nextMonth,
-                      child: const Icon(
-                        Icons.arrow_forward_ios,
-                        color: Color(0xFF9B59B6),
-                        size: 20,
+                      child: const Text(
+                        '>',
+                        style: TextStyle(
+                          fontSize: 24,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF9B59B6),
+                          fontFamily: 'Roboto',
+                        ),
                       ),
                     ),
                   ],
@@ -278,9 +306,9 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
                           crossAxisSpacing: 4,
                           childAspectRatio: 1,
                         ),
-                        itemCount: _buildCalendarDays().length,
+                        itemCount: _buildCalendarDays(habits).length,
                         itemBuilder: (context, index) {
-                          final days = _buildCalendarDays();
+                          final days = _buildCalendarDays(habits);
                           if (index < days.length) {
                             return days[index];
                           }
@@ -301,9 +329,9 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
                     color: Colors.white.withOpacity(0.7),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                  child: Column(
+                    child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: widget.habits
+                    children: habits
                         .where((habit) {
                           final habitId = habit['id'] as String;
                           // Show all habits in legend if none selected, otherwise only selected ones
@@ -354,7 +382,7 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => HabitSelectionScreen(
-                            allHabits: widget.habits,
+                            allHabits: habits,
                             selectedHabitIds: _selectedHabitIds,
                           ),
                         ),
