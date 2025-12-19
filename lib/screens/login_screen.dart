@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart'; // Eklendi
 import '../services/auth_service.dart';
 import 'signup_screen.dart';
+import '../providers/settings_provider.dart'; // Eklendi
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -59,7 +61,6 @@ class _LoginScreenState extends State<LoginScreen> {
         password: _passwordController.text,
       );
 
-      // If login was successful, navigation will be handled by AppRouter
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/home');
       }
@@ -75,7 +76,18 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // --- DARK MODE AYARLARI ---
+    final settings = context.watch<SettingsProvider>();
+    final isDark = settings.darkModeEnabled;
+
+    // Renkleri burada belirliyoruz
+    final textColor = isDark ? Colors.white : const Color(0xFF2C3E50);
+    final inputFillColor = isDark ? const Color(0xFF1E293B) : Colors.white;
+    final labelColor = isDark ? Colors.white70 : const Color(0xFF2C3E50);
+
     return Scaffold(
+      // Arka plan rengini main.dart hallediyor ama garanti olsun diye buraya da ekledim
+      backgroundColor: isDark ? const Color(0xFF0F172A) : const Color(0xFFE6F2FA), 
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
@@ -85,24 +97,24 @@ class _LoginScreenState extends State<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 const SizedBox(height: 40),
-                const Text(
+                Text(
                   'PERPETUA',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 48,
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF2C3E50),
+                    color: textColor, // Dinamik Renk
                     letterSpacing: 2,
                   ),
                 ),
                 const SizedBox(height: 20),
-                const Text(
+                Text(
                   'Login',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     fontSize: 24,
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF2C3E50),
+                    color: textColor, // Dinamik Renk
                   ),
                 ),
                 const SizedBox(height: 40),
@@ -111,13 +123,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   keyboardType: TextInputType.emailAddress,
                   textInputAction: TextInputAction.next,
                   validator: _validateEmail,
+                  style: TextStyle(color: textColor), // Input yazı rengi
                   decoration: InputDecoration(
                     labelText: 'Email Address',
-                    labelStyle: const TextStyle(
-                      color: Color(0xFF2C3E50),
+                    labelStyle: TextStyle(
+                      color: labelColor, // Label rengi
                     ),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: inputFillColor, // Input arka planı
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide.none,
@@ -135,13 +148,14 @@ class _LoginScreenState extends State<LoginScreen> {
                   textInputAction: TextInputAction.done,
                   validator: _validatePassword,
                   onFieldSubmitted: (_) => _handleLogin(),
+                  style: TextStyle(color: textColor), // Input yazı rengi
                   decoration: InputDecoration(
                     labelText: 'Password',
-                    labelStyle: const TextStyle(
-                      color: Color(0xFF2C3E50),
+                    labelStyle: TextStyle(
+                      color: labelColor, // Label rengi
                     ),
                     filled: true,
-                    fillColor: Colors.white,
+                    fillColor: inputFillColor, // Input arka planı
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
                       borderSide: BorderSide.none,
@@ -155,6 +169,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         _obscurePassword
                             ? Icons.visibility_outlined
                             : Icons.visibility_off_outlined,
+                        color: textColor, // İkon rengi
                       ),
                       onPressed: () {
                         setState(() {
@@ -218,10 +233,10 @@ class _LoginScreenState extends State<LoginScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    const Text(
+                    Text(
                       "Don't have an account? ",
                       style: TextStyle(
-                        color: Color(0xFF2C3E50),
+                        color: textColor, // Dinamik Renk
                       ),
                     ),
                     TextButton(
