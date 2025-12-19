@@ -10,8 +10,6 @@ class SettingsScreen extends StatefulWidget {
 }
 
 class _SettingsScreenState extends State<SettingsScreen> {
-  bool _accessibilityModeEnabled = false;
-  String _selectedLanguage = 'English';
 
   @override
   Widget build(BuildContext context) {
@@ -81,54 +79,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     const SizedBox(height: 16),
                     // Language
                     _buildSettingCard(
-                      onTap: _openLanguagePicker,
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text('Language', style: theme.textTheme.titleLarge),
-                          Row(
-                            children: [
-                              Text(
-                                _selectedLanguage,
-                                style: theme.textTheme.bodyLarge,
-                              ),
-                              const SizedBox(width: 8),
-                              Icon(
-                                Icons.arrow_forward_ios,
-                                size: 16,
-                                color: theme.colorScheme.primary,
-                              ),
-                            ],
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    // Accessibility Mode
-                    _buildSettingCard(
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Accessibility Mode', style: theme.textTheme.titleLarge),
-                          Switch(
-                            value: _accessibilityModeEnabled,
-                            onChanged: (value) {
-                              setState(() {
-                                _accessibilityModeEnabled = value;
-                              });
-                              _showSnack(
-                                "Accessibility mode ${value ? 'enabled' : 'disabled'}",
-                              );
-                            },
-                            activeColor: Colors.white,
-                            activeTrackColor: theme.colorScheme.primary,
-                            inactiveTrackColor: Colors.grey.withOpacity(0.4),
-                            thumbColor:
-                                MaterialStateProperty.resolveWith<Color>(
-                              (states) => states.contains(MaterialState.selected)
-                                  ? Colors.white
-                                  : theme.textTheme.titleLarge?.color?.withOpacity(0.6) ?? Colors.grey,
-                            ),
+                          Text(
+                            'English',
+                            style: theme.textTheme.bodyLarge,
                           ),
                         ],
                       ),
@@ -240,46 +197,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
     _showSnack('Backup ready to export!');
   }
 
-  Future<void> _openLanguagePicker() async {
-    final languages = ['English', 'Türkçe', 'Deutsch', 'Español'];
-    final selected = await showModalBottomSheet<String>(
-      context: context,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) {
-        return SafeArea(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: languages.map((language) {
-              final isSelected = language == _selectedLanguage;
-              return ListTile(
-                title: Text(
-                  language,
-                  style: TextStyle(
-                    fontStyle: FontStyle.italic,
-                    fontWeight:
-                        isSelected ? FontWeight.w700 : FontWeight.w500,
-                  ),
-                ),
-                trailing: isSelected
-                    ? Icon(Icons.check, color: Theme.of(context).colorScheme.primary)
-                    : null,
-                onTap: () => Navigator.pop(context, language),
-              );
-            }).toList(),
-          ),
-        );
-      },
-    );
-
-    if (selected != null && selected != _selectedLanguage) {
-      setState(() {
-        _selectedLanguage = selected;
-      });
-      _showSnack('$selected selected');
-    }
-  }
 
   void _showAboutApp() {
     showAboutDialog(

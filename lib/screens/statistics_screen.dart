@@ -362,37 +362,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               ),
             ),
             const SizedBox(height: 24),
-            // Share Button
-            Padding(
-              padding: const EdgeInsets.only(bottom: 20.0),
-              child: Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20.0),
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                decoration: _whiteCardDecoration.copyWith(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
-                    Icon(
-                      Icons.send,
-                      color: Color(0xFF6B46C1),
-                      size: 20,
-                    ),
-                    SizedBox(width: 8),
-                    Text(
-                      'Share',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        fontStyle: FontStyle.italic,
-                        color: Color(0xFF2C3E50),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
           ],
         ),
       ),

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'firebase_options.dart';
+import 'providers/auth_provider.dart';
+import 'providers/habit_provider.dart';
 import 'providers/settings_provider.dart';
 import 'services/auth_service.dart';
 // Your Imports
@@ -30,8 +32,12 @@ void main() async {
   await settingsProvider.loadPreferences();
   
   runApp(
-    ChangeNotifierProvider.value(
-      value: settingsProvider,
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => HabitProvider()),
+        ChangeNotifierProvider.value(value: settingsProvider),
+      ],
       child: const PerpetuaApp(),
     ),
   );
