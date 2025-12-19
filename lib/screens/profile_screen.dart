@@ -8,6 +8,12 @@ class ProfileScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+    final userEmail = authProvider.user?.email ?? '';
+    final username = userEmail.contains('@') 
+        ? userEmail.split('@')[0] 
+        : userEmail;
+
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -83,9 +89,9 @@ class ProfileScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 16),
                           // Username
-                          const Text(
-                            'Username',
-                            style: TextStyle(
+                          Text(
+                            username,
+                            style: const TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.w600,
                               fontStyle: FontStyle.italic,
@@ -126,15 +132,16 @@ class ProfileScreen extends StatelessWidget {
                     // Logout Button
                     GestureDetector(
                       onTap: () async {
-                        // Trigger sign out via AuthProvider; AppRouter will react
-                        // and show the unauthenticated flow (Welcome/Login).
+                        // Trigger sign out via AuthProvider
                         final auth = context.read<AuthProvider>();
                         final success = await auth.signOut();
 
                         if (success) {
-                          // Pop all routes back to the root (AppRouter),
-                          // which will now show the login/welcome flow.
-                          Navigator.of(context).popUntil((route) => route.isFirst);
+                          // Navigate to sign up page after logout
+                          Navigator.of(context).pushNamedAndRemoveUntil(
+                            '/signup',
+                            (route) => false,
+                          );
                         }
                       },
                       child: Container(
