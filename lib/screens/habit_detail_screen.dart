@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/habit_provider.dart';
+import '../services/habit_service.dart';
+import '../models/habit.dart';
 import 'habit_edit_screen.dart';
 
 class HabitDetailScreen extends StatefulWidget {
@@ -251,13 +251,60 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final habitProvider = context.watch<HabitProvider>();
-    final habit = habitProvider.habits.firstWhere(
-      (h) => h.id == widget.habitId,
-      orElse: () => throw 'Habit not found',
-    );
-
-    final now = DateTime.now();
+    final habitService = HabitService();
+    
+    return FutureBuilder<Habit?>(
+      future: habitService.getHabit(widget.habitId),
+      builder: (context, snapshot) {
+        // Loading state
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        
+        // Error state
+        if (snapshot.hasError) {
+          return Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                  const SizedBox(height: 16),
+                  Text('Error: ${snapshot.error}'),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Go Back'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+        
+        // No data
+        if (!snapshot.hasData || snapshot.data == null) {
+          return Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Text('Habit not found'),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Text('Go Back'),
+                  ),
+                ],
+              ),
+            ),
+          );
+        }
+        
+        final habit = snapshot.data!;
+        final now = DateTime.now();
     
     final last7Days = <String>[];
     for (int i = 0; i < 7; i++) {
@@ -326,8 +373,8 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
       }
     });
 
-    return Scaffold(
-      body: SafeArea(
+        return Scaffold(
+          body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
@@ -624,6 +671,8 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
           ),
         ),
       ),
+        );
+      },
     );
   }
 }
