@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/habit_provider.dart';
+import '../services/habit_service.dart';
+import '../models/habit.dart';
 
 class HabitSelectionScreen extends StatefulWidget {
   final List<Map<String, dynamic>> allHabits;
@@ -49,7 +49,7 @@ class _HabitSelectionScreenState extends State<HabitSelectionScreen> {
     });
 
     try {
-      final habitProvider = context.read<HabitProvider>();
+      final habitService = HabitService();
       
       // Find habits that were deselected (removed from selection)
       final previouslySelected = widget.selectedHabitIds.isEmpty 
@@ -62,16 +62,14 @@ class _HabitSelectionScreenState extends State<HabitSelectionScreen> {
       
       // Clear completion history for deselected habits
       for (final habitId in deselectedHabitIds) {
-        final habit = habitProvider.habits.firstWhere(
-          (h) => h.id == habitId,
-          orElse: () => throw 'Habit not found',
-        );
+        final habit = await habitService.getHabit(habitId);
+        if (habit == null) continue;
         
         // Clear all completion history
         final emptyHistory = <String, bool>{};
         
         // Recalculate streaks (will be 0 since no completions)
-        await habitProvider.updateHabit(
+        await habitService.updateHabit(
           habitId: habitId,
           completionHistory: emptyHistory,
           streak: 0,

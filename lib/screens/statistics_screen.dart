@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/habit_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../services/habit_service.dart';
+import '../services/auth_service.dart';
+import '../models/habit.dart';
 
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({super.key});
@@ -136,23 +138,68 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final habitProvider = context.watch<HabitProvider>();
-    final habits = habitProvider.habits;
+    final authService = AuthService();
+    final habitService = HabitService();
     
-    // Convert habits to map format for _calculateStats
-    final habitMaps = habits.map((habit) {
-      return {
-        'id': habit.id,
-        'name': habit.name,
-        'emoji': habit.emoji,
-        'streak': habit.streak,
-        'bestStreak': habit.bestStreak,
-        'completionHistory': habit.completionHistory,
-      };
-    }).toList();
-    
-    final stats = _calculateStats(habitMaps);
-    return Scaffold(
+    return StreamBuilder<User?>(
+      stream: authService.authStateChanges,
+      builder: (context, authSnapshot) {
+        if (authSnapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        
+        if (!authSnapshot.hasData || authSnapshot.data == null) {
+          return const Scaffold(
+            body: Center(child: Text('Please log in')),
+          );
+        }
+        
+        final userId = authSnapshot.data!.uid;
+        
+        return StreamBuilder<List<Habit>>(
+          stream: habitService.getHabitsStream(userId),
+          builder: (context, snapshot) {
+            // Loading state
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+            
+            // Error state
+            if (snapshot.hasError) {
+              return Scaffold(
+                body: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                      const SizedBox(height: 16),
+                      Text('Error: ${snapshot.error}'),
+                    ],
+                  ),
+                ),
+              );
+            }
+            
+            // Convert habits to map format for _calculateStats
+            final habits = snapshot.data ?? [];
+            final habitMaps = habits.map((habit) {
+              return {
+                'id': habit.id,
+                'name': habit.name,
+                'emoji': habit.emoji,
+                'streak': habit.streak,
+                'bestStreak': habit.bestStreak,
+                'completionHistory': habit.completionHistory,
+              };
+            }).toList();
+            
+            final stats = _calculateStats(habitMaps);
+            
+            return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
@@ -349,6 +396,10 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           ],
         ),
       ),
+            );
+          },
+        );
+      },
     );
   }
 

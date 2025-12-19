@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/habit_provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../services/habit_service.dart';
+import '../services/auth_service.dart';
+import '../models/habit.dart';
 import 'habit_selection_screen.dart';
 
 class StreakCalendarScreen extends StatefulWidget {
@@ -162,17 +164,63 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final habitProvider = context.watch<HabitProvider>();
-    final habits = habitProvider.habits.map((habit) {
-      return {
-        'id': habit.id,
-        'name': habit.name,
-        'emoji': habit.emoji,
-        'completionHistory': habit.completionHistory,
-      };
-    }).toList();
+    final authService = AuthService();
+    final habitService = HabitService();
     
-    return Scaffold(
+    return StreamBuilder<User?>(
+      stream: authService.authStateChanges,
+      builder: (context, authSnapshot) {
+        if (authSnapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        
+        if (!authSnapshot.hasData || authSnapshot.data == null) {
+          return const Scaffold(
+            body: Center(child: Text('Please log in')),
+          );
+        }
+        
+        final userId = authSnapshot.data!.uid;
+        
+        return StreamBuilder<List<Habit>>(
+          stream: habitService.getHabitsStream(userId),
+          builder: (context, snapshot) {
+            // Loading state
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Scaffold(
+                body: Center(child: CircularProgressIndicator()),
+              );
+            }
+            
+            // Error state
+            if (snapshot.hasError) {
+              return Scaffold(
+                body: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.error_outline, size: 48, color: Colors.red),
+                      const SizedBox(height: 16),
+                      Text('Error: ${snapshot.error}'),
+                    ],
+                  ),
+                ),
+              );
+            }
+            
+            final habits = snapshot.data ?? [];
+            final habitsMap = habits.map((habit) {
+              return {
+                'id': habit.id,
+                'name': habit.name,
+                'emoji': habit.emoji,
+                'completionHistory': habit.completionHistory,
+              };
+            }).toList();
+            
+            return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -306,9 +354,9 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
                           crossAxisSpacing: 4,
                           childAspectRatio: 1,
                         ),
-                        itemCount: _buildCalendarDays(habits).length,
-                        itemBuilder: (context, index) {
-                          final days = _buildCalendarDays(habits);
+                          itemCount: _buildCalendarDays(habitsMap).length,
+                          itemBuilder: (context, index) {
+                            final days = _buildCalendarDays(habitsMap);
                           if (index < days.length) {
                             return days[index];
                           }
@@ -333,9 +381,8 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: habits
                         .where((habit) {
-                          final habitId = habit['id'] as String;
                           // Show all habits in legend if none selected, otherwise only selected ones
-                          return _selectedHabitIds.isEmpty || _selectedHabitIds.contains(habitId);
+                          return _selectedHabitIds.isEmpty || _selectedHabitIds.contains(habit.id);
                         })
                         .map((habit) {
                       return Padding(
@@ -343,12 +390,12 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
                         child: Row(
                           children: [
                             Text(
-                              habit['emoji'] as String,
+                              habit.emoji,
                               style: const TextStyle(fontSize: 20),
                             ),
                             const SizedBox(width: 12),
                             Text(
-                              habit['name'] as String,
+                              habit.name,
                               style: const TextStyle(
                                 fontSize: 14,
                                 color: Color(0xFF2C3E50),
@@ -382,7 +429,7 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => HabitSelectionScreen(
-                            allHabits: habits,
+                            allHabits: habitsMap,
                             selectedHabitIds: _selectedHabitIds,
                           ),
                         ),
@@ -410,6 +457,10 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
           ),
         ),
       ),
+            );
+          },
+        );
+      },
     );
   }
 }

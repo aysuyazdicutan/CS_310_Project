@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-
-import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../models/habit.dart';
-import '../providers/habit_provider.dart';
-import '../providers/auth_provider.dart';
+import '../services/habit_service.dart';
+import '../services/auth_service.dart';
 import 'habit_detail_screen.dart';
 import 'streak_calendar_screen.dart';
 
@@ -109,8 +108,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return maxStreak;
   }
 
-  void _toggleHabit(String id, HabitProvider habitProvider) async {
-    final habit = habitProvider.habits.firstWhere((h) => h.id == id);
+  void _toggleHabit(String id, List<Habit> habits) async {
+    final habit = habits.firstWhere((h) => h.id == id);
     final today = DateTime.now();
     final todayKey = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
     
@@ -122,24 +121,48 @@ class _HomeScreenState extends State<HomeScreen> {
     final newBestStreak = _calculateBestStreak(newCompletionHistory);
     final finalBestStreak = newBestStreak > habit.bestStreak ? newBestStreak : habit.bestStreak;
     
-    await habitProvider.updateHabit(
-      habitId: id,
-      isCompleted: !wasCompleted,
-      streak: newStreak,
-      bestStreak: finalBestStreak,
-      completionHistory: newCompletionHistory,
-    );
+    final habitService = HabitService();
+    try {
+      await habitService.updateHabit(
+        habitId: id,
+        isCompleted: !wasCompleted,
+        streak: newStreak,
+        bestStreak: finalBestStreak,
+        completionHistory: newCompletionHistory,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating habit: $e'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
   }
 
-  void _deleteHabit(String id, HabitProvider habitProvider) async {
-    final success = await habitProvider.deleteHabit(id);
-    if (success && mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Habit deleted'),
-          duration: Duration(seconds: 2),
-        ),
-      );
+  void _deleteHabit(String id) async {
+    final habitService = HabitService();
+    try {
+      await habitService.deleteHabit(id);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('Habit deleted'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error deleting habit: $e'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
     }
   }
 
@@ -157,12 +180,30 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final habitProvider = context.watch<HabitProvider>();
-    final authProvider = context.watch<AuthProvider>();
-    final habits = habitProvider.habits;
+    final authService = AuthService();
+    final habitService = HabitService();
+    
+    return StreamBuilder<User?>(
+      stream: authService.authStateChanges,
+      builder: (context, authSnapshot) {
+        // Loading auth state
+        if (authSnapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        
+        // No authenticated user
+        if (!authSnapshot.hasData || authSnapshot.data == null) {
+          return const Scaffold(
+            body: Center(child: Text('Please log in')),
+          );
+        }
+        
+        final userId = authSnapshot.data!.uid;
 
-    return Scaffold(
-      body: SafeArea(
+        return Scaffold(
+          body: SafeArea(
         child: Column(
           children: [
             // Top area
@@ -220,190 +261,204 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
               ),
             ),
-            // Habits list
+            // Habits list with StreamBuilder
             Expanded(
-              child: habitProvider.isLoading
-                  ? const Center(child: CircularProgressIndicator())
-                  : habitProvider.errorMessage != null
-                      ? Center(
-                          child: Padding(
-                            padding: const EdgeInsets.all(20.0),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                const Icon(
-                                  Icons.error_outline,
-                                  size: 48,
-                                  color: Colors.red,
-                                ),
-                                const SizedBox(height: 16),
-                                const Text(
-                                  'Error loading habits',
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.w600,
-                                    color: Color(0xFF2C3E50),
-                                  ),
-                                ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  habitProvider.errorMessage!,
-                                  textAlign: TextAlign.center,
-                                  style: TextStyle(
-                                    fontSize: 14,
-                                    color: Colors.grey[600],
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                ElevatedButton(
-                                  onPressed: () {
-                                    if (authProvider.user != null) {
-                                      habitProvider.initialize(authProvider.user!.uid);
-                                    }
-                                  },
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: const Color(0xFF4A90E2),
-                                    foregroundColor: Colors.white,
-                                  ),
-                                  child: const Text('Retry'),
+              child: StreamBuilder<List<Habit>>(
+                stream: habitService.getHabitsStream(userId),
+                builder: (context, snapshot) {
+                  // Loading state
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Center(child: CircularProgressIndicator());
+                  }
+                  
+                  // Error state
+                  if (snapshot.hasError) {
+                    return Center(
+                      child: Padding(
+                        padding: const EdgeInsets.all(20.0),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            const Icon(
+                              Icons.error_outline,
+                              size: 48,
+                              color: Colors.red,
+                            ),
+                            const SizedBox(height: 16),
+                            const Text(
+                              'Error loading habits',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.w600,
+                                color: Color(0xFF2C3E50),
+                              ),
+                            ),
+                            const SizedBox(height: 8),
+                            Text(
+                              snapshot.error.toString(),
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: Colors.grey[600],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            ElevatedButton(
+                              onPressed: () {
+                                setState(() {});
+                              },
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF4A90E2),
+                                foregroundColor: Colors.white,
+                              ),
+                              child: const Text('Retry'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  }
+                  
+                  // Success state
+                  if (!snapshot.hasData || snapshot.data!.isEmpty) {
+                    return const Center(
+                      child: Text(
+                        'No habits yet. Add one!',
+                        style: TextStyle(
+                          fontSize: 16,
+                          color: Color(0xFF2C3E50),
+                        ),
+                      ),
+                    );
+                  }
+                  
+                  final habits = snapshot.data!;
+                  
+                  return ListView.builder(
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    itemCount: habits.length,
+                    itemBuilder: (context, index) {
+                      final habit = habits[index];
+                      final today = DateTime.now();
+                      final todayKey = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+                      final isCompleted = habit.completionHistory[todayKey] ?? false;
+                      return Dismissible(
+                        key: Key(habit.id),
+                        direction: DismissDirection.endToStart,
+                        background: Container(
+                          alignment: Alignment.centerRight,
+                          padding: const EdgeInsets.only(right: 20),
+                          decoration: BoxDecoration(
+                            color: Colors.red,
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: const Icon(
+                            Icons.delete,
+                            color: Colors.white,
+                            size: 28,
+                          ),
+                        ),
+                        onDismissed: (direction) {
+                          _deleteHabit(habit.id);
+                        },
+                        child: GestureDetector(
+                          onTap: () => _navigateToHabitDetail(habit),
+                          child: Container(
+                            margin: const EdgeInsets.only(bottom: 12),
+                            padding: const EdgeInsets.all(16),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.05),
+                                  blurRadius: 8,
+                                  offset: const Offset(0, 2),
                                 ),
                               ],
                             ),
-                          ),
-                        )
-                      : habits.isEmpty
-                          ? const Center(
-                              child: Text(
-                                'No habits yet. Add one!',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Color(0xFF2C3E50),
-                                ),
-                              ),
-                            )
-                          : ListView.builder(
-                          padding: const EdgeInsets.symmetric(horizontal: 20),
-                          itemCount: habits.length,
-                          itemBuilder: (context, index) {
-                            final habit = habits[index];
-                            final today = DateTime.now();
-                            final todayKey = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
-                            final isCompleted = habit.completionHistory[todayKey] ?? false;
-                        return Dismissible(
-                          key: Key(habit.id),
-                          direction: DismissDirection.endToStart,
-                          background: Container(
-                            alignment: Alignment.centerRight,
-                            padding: const EdgeInsets.only(right: 20),
-                            decoration: BoxDecoration(
-                              color: Colors.red,
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: const Icon(
-                              Icons.delete,
-                              color: Colors.white,
-                              size: 28,
-                            ),
-                          ),
-                          onDismissed: (direction) {
-                            _deleteHabit(habit.id, habitProvider);
-                          },
-                          child: GestureDetector(
-                            onTap: () => _navigateToHabitDetail(habit),
-                            child: Container(
-                              margin: const EdgeInsets.only(bottom: 12),
-                              padding: const EdgeInsets.all(16),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(12),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withOpacity(0.05),
-                                    blurRadius: 8,
-                                    offset: const Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                              child: Row(
-                                children: [
-                                  // Toggle icon
-                                  GestureDetector(
-                                    onTap: () => _toggleHabit(habit.id, habitProvider),
-                                    child: Container(
-                                      width: 40,
-                                      height: 40,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
+                            child: Row(
+                              children: [
+                                // Toggle icon
+                                GestureDetector(
+                                  onTap: () => _toggleHabit(habit.id, habits),
+                                  child: Container(
+                                    width: 40,
+                                    height: 40,
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: isCompleted
+                                          ? const Color(0xFF4A90E2)
+                                          : Colors.grey[200],
+                                      border: Border.all(
                                         color: isCompleted
                                             ? const Color(0xFF4A90E2)
-                                            : Colors.grey[200],
-                                        border: Border.all(
-                                          color: isCompleted
-                                              ? const Color(0xFF4A90E2)
-                                              : Colors.grey[400]!,
-                                          width: 2,
-                                        ),
+                                            : Colors.grey[400]!,
+                                        width: 2,
                                       ),
-                                      child: isCompleted
-                                          ? const Icon(
-                                              Icons.check,
-                                              color: Colors.white,
-                                              size: 24,
-                                            )
-                                          : null,
                                     ),
+                                    child: isCompleted
+                                        ? const Icon(
+                                            Icons.check,
+                                            color: Colors.white,
+                                            size: 24,
+                                          )
+                                        : null,
                                   ),
-                                  const SizedBox(width: 16),
-                                  // Habit emoji and name
-                                  Expanded(
-                                    child: Row(
-                                      children: [
-                                        Text(
-                                          habit.emoji,
-                                          style: const TextStyle(fontSize: 24),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: Text(
-                                            habit.name,
-                                            style: TextStyle(
-                                              fontSize: 16,
-                                              fontWeight: FontWeight.w600,
-                                              color: const Color(0xFF2C3E50),
-                                              decoration: isCompleted
-                                                  ? TextDecoration.lineThrough
-                                                  : null,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  // Streak indicator
-                                  Row(
+                                ),
+                                const SizedBox(width: 16),
+                                // Habit emoji and name
+                                Expanded(
+                                  child: Row(
                                     children: [
-                                      const Text(
-                                        '🔥',
-                                        style: TextStyle(fontSize: 18),
-                                      ),
-                                      const SizedBox(width: 4),
                                       Text(
-                                        '${habit.streak}D',
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.bold,
-                                          color: Color(0xFF2C3E50),
+                                        habit.emoji,
+                                        style: const TextStyle(fontSize: 24),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: Text(
+                                          habit.name,
+                                          style: TextStyle(
+                                            fontSize: 16,
+                                            fontWeight: FontWeight.w600,
+                                            color: const Color(0xFF2C3E50),
+                                            decoration: isCompleted
+                                                ? TextDecoration.lineThrough
+                                                : null,
+                                          ),
                                         ),
                                       ),
                                     ],
                                   ),
-                                ],
-                              ),
+                                ),
+                                // Streak indicator
+                                Row(
+                                  children: [
+                                    const Text(
+                                      '🔥',
+                                      style: TextStyle(fontSize: 18),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    Text(
+                                      '${habit.streak}D',
+                                      style: const TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF2C3E50),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
             ),
             // Add button
             const Text(
@@ -420,20 +475,23 @@ class _HomeScreenState extends State<HomeScreen> {
               child: FloatingActionButton(
                 onPressed: () async {
                   final result = await Navigator.pushNamed(context, '/addHabit');
-                  if (result != null && result is Map<String, dynamic> && authProvider.user != null) {
-                    final success = await habitProvider.createHabit(
-                      title: result['name'] as String,
-                      description: '',
-                      userId: authProvider.user!.uid,
-                      emoji: result['emoji'] as String,
-                    );
-                    if (!success && mounted) {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          content: Text(habitProvider.errorMessage ?? 'Failed to create habit'),
-                          duration: const Duration(seconds: 2),
-                        ),
+                  if (result != null && result is Map<String, dynamic>) {
+                    try {
+                      await habitService.createHabit(
+                        title: result['name'] as String,
+                        description: '',
+                        userId: userId,
+                        emoji: result['emoji'] as String,
                       );
+                    } catch (e) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Failed to create habit: $e'),
+                            duration: const Duration(seconds: 2),
+                          ),
+                        );
+                      }
                     }
                   }
                 },
@@ -459,31 +517,33 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
         child: BottomNavigationBar(
           currentIndex: _selectedIndex,
-          onTap: (index) {
+          onTap: (index) async {
             setState(() {
               _selectedIndex = index;
             });
             // Navigate to screens when tapping bottom nav items
             if (index == 0) {
-              Navigator.pushNamed(
-                context,
-                '/reminders',
-                arguments: habits
-                    .map(
-                      (habit) => {
-                        'id': habit.id,
-                        'name': habit.name,
-                        'emoji': habit.emoji,
-                      },
-                    )
-                    .toList(),
-              );
+              // Get habits from StreamBuilder for reminders
+              final habitsStream = habitService.getHabitsStream(userId);
+              final habitsSnapshot = await habitsStream.first;
+              if (mounted) {
+                Navigator.pushNamed(
+                  context,
+                  '/reminders',
+                  arguments: habitsSnapshot
+                      .map(
+                        (habit) => {
+                          'id': habit.id,
+                          'name': habit.name,
+                          'emoji': habit.emoji,
+                        },
+                      )
+                      .toList(),
+                );
+              }
             } else if (index == 1) {
-              // Statistics screen now uses Provider to get real-time habit data
               Navigator.pushNamed(context, '/statistics');
             } else if (index == 2) {
-              // Navigate to Streak Calendar
-              // StreakCalendarScreen now uses Provider to get real-time habit data
               Navigator.push(
                 context,
                 MaterialPageRoute(
@@ -525,6 +585,8 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
       ),
+        );
+      },
     );
   }
 }

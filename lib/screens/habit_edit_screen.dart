@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
-import '../providers/habit_provider.dart';
+import '../services/habit_service.dart';
 
 class HabitEditScreen extends StatefulWidget {
   final String habitId;
@@ -133,9 +132,10 @@ class _HabitEditScreenState extends State<HabitEditScreen> {
     });
 
     try {
-      final habitProvider = context.read<HabitProvider>();
+      final habitService = HabitService();
       
-      final habit = await habitProvider.getHabit(widget.habitId);
+      // Get current habit to preserve bestStreak
+      final habit = await habitService.getHabit(widget.habitId);
       if (habit == null) {
         throw 'Habit not found';
       }
@@ -169,16 +169,12 @@ class _HabitEditScreenState extends State<HabitEditScreen> {
       final newBestStreak = _calculateBestStreak(existingHistory);
       final finalBestStreak = newBestStreak > habit.bestStreak ? newBestStreak : habit.bestStreak;
       
-      final success = await habitProvider.updateHabit(
+      await habitService.updateHabit(
         habitId: widget.habitId,
         completionHistory: existingHistory,
         streak: newStreak,
         bestStreak: finalBestStreak,
       );
-      
-      if (!success && mounted) {
-        throw 'Failed to update habit';
-      }
       
       if (mounted) {
         await Future.delayed(const Duration(milliseconds: 300));

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
-import 'providers/auth_provider.dart';
-import 'providers/habit_provider.dart';
 import 'providers/settings_provider.dart';
+import 'services/auth_service.dart';
 // Your Imports
 import 'screens/profile_screen.dart';
 import 'screens/settings_screen.dart';
@@ -30,12 +30,8 @@ void main() async {
   await settingsProvider.loadPreferences();
   
   runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-        ChangeNotifierProvider(create: (_) => HabitProvider()),
-        ChangeNotifierProvider.value(value: settingsProvider),
-      ],
+    ChangeNotifierProvider.value(
+      value: settingsProvider,
       child: const PerpetuaApp(),
     ),
   );
@@ -136,48 +132,41 @@ class PerpetuaApp extends StatelessWidget {
   }
 }
 
-/// Top-level widget that reacts to authentication state.
-class AppRouter extends StatefulWidget {
+/// Top-level widget that reacts to authentication state using StreamBuilder.
+class AppRouter extends StatelessWidget {
   const AppRouter({super.key});
 
   @override
-  State<AppRouter> createState() => _AppRouterState();
-}
-
-class _AppRouterState extends State<AppRouter> {
-  String? _initializedUserId;
-
-  @override
   Widget build(BuildContext context) {
-    final auth = context.watch<AuthProvider>();
-    final habitProvider = context.read<HabitProvider>();
-
-    // While auth is initializing or performing an action, show a simple loader.
-    if (auth.isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    // If there is no authenticated user, show the login / signup flow.
-    if (auth.user == null) {
-      _initializedUserId = null;
-      return const WelcomeScreen();
-    }
-
-    // If the user is authenticated, initialize habits (only once per user)
-    final userId = auth.user!.uid;
-    if (_initializedUserId != userId) {
-      _initializedUserId = userId;
-      // Initialize habits stream for this user after build completes
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted && _initializedUserId == userId) {
-          habitProvider.initialize(userId);
+    final authService = AuthService();
+    
+    return StreamBuilder<User?>(
+      stream: authService.authStateChanges,
+      builder: (context, snapshot) {
+        // Loading state
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
         }
-      });
-    }
-
-    // If the user is authenticated, show home screen
-    return const HomeScreen();
+        
+        // Error state
+        if (snapshot.hasError) {
+          return Scaffold(
+            body: Center(
+              child: Text('Error: ${snapshot.error}'),
+            ),
+          );
+        }
+        
+        // No authenticated user - show login/signup flow
+        if (!snapshot.hasData || snapshot.data == null) {
+          return const WelcomeScreen();
+        }
+        
+        // User is authenticated - show home screen
+        return const HomeScreen();
+      },
+    );
   }
 }
