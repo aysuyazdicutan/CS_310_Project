@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/habit_provider.dart';
 
 class StatisticsScreen extends StatefulWidget {
   const StatisticsScreen({super.key});
@@ -9,91 +11,147 @@ class StatisticsScreen extends StatefulWidget {
 
 class _StatisticsScreenState extends State<StatisticsScreen> {
   static const _dayLabels = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  static const _daySlots = [22, 23, 24, 25, 26, 27, 28];
 
-  bool _hasLoadedData = false;
-  double _adherence = 0;
-  int _longestStreak = 0;
-  List<double> _weeklyData = List<double>.filled(7, 0);
-
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_hasLoadedData) return;
-
-    final args = ModalRoute.of(context)?.settings.arguments;
-    if (args is List) {
-      final habitMaps = args.whereType<Map>().toList();
-      _calculateStats(habitMaps);
+  int _calculateBestStreak(Map<String, dynamic> completionHistory) {
+    if (completionHistory.isEmpty) return 0;
+    
+    final completedDates = <DateTime>[];
+    
+    completionHistory.forEach((dateKey, completed) {
+      if (completed == true) {
+        try {
+          final parts = dateKey.split('-');
+          if (parts.length == 3) {
+            final date = DateTime(
+              int.parse(parts[0]),
+              int.parse(parts[1]),
+              int.parse(parts[2]),
+            );
+            completedDates.add(date);
+          }
+        } catch (e) {
+          // Skip invalid dates
+        }
+      }
+    });
+    
+    if (completedDates.isEmpty) return 0;
+    
+    completedDates.sort((a, b) => b.compareTo(a));
+    
+    int maxStreak = 0;
+    int currentStreak = 1;
+    
+    for (int i = 0; i < completedDates.length - 1; i++) {
+      final currentDate = completedDates[i];
+      final nextDate = completedDates[i + 1];
+      final daysDiff = currentDate.difference(nextDate).inDays;
+      
+      if (daysDiff == 1) {
+        currentStreak++;
+      } else {
+        maxStreak = currentStreak > maxStreak ? currentStreak : maxStreak;
+        currentStreak = 1;
+      }
     }
-    _hasLoadedData = true;
+    
+    maxStreak = currentStreak > maxStreak ? currentStreak : maxStreak;
+    return maxStreak;
   }
 
-  void _calculateStats(List<Map> habits) {
+  Map<String, dynamic> _calculateStats(List<Map> habits) {
+    double adherence = 0;
+    int longestStreak = 0;
+    List<double> weeklyData = List<double>.filled(7, 0);
+    
     if (habits.isEmpty) {
-      setState(() {
-        _adherence = 0;
-        _longestStreak = 0;
-        _weeklyData = List<double>.filled(7, 0);
-      });
-      return;
+      return {
+        'adherence': adherence,
+        'longestStreak': longestStreak,
+        'weeklyData': weeklyData,
+      };
     }
 
+    final now = DateTime.now();
     final totalHabits = habits.length;
-    double totalStreak = 0;
     int longest = 0;
-    // For weekly chart: count how many habits have streak covering each of the last 7 days
-    // If a habit has streak 5, it means the last 5 days are completed
-    // So for days 1-5 (today back to 5 days ago), this habit counts
+    
+    final last7Days = <String>[];
+    for (int i = 0; i < 7; i++) {
+      final date = now.subtract(Duration(days: i));
+      final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      last7Days.add(dateKey);
+    }
+    
+    final last30Days = <String>[];
+    for (int i = 0; i < 30; i++) {
+      final date = now.subtract(Duration(days: i));
+      final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      last30Days.add(dateKey);
+    }
+    
     final weeklyStreakCount = List<double>.filled(7, 0);
+    int totalCompletedDays = 0;
 
     for (final habit in habits) {
-      final streak = (habit['streak'] as num?)?.toInt() ?? 0;
-      totalStreak += streak;
+      final completionHistory = (habit['completionHistory'] as Map<String, dynamic>?) ?? {};
       
-      // Longest streak is the maximum streak value from all habits
-      if (streak > longest) {
-        longest = streak;
+      // Calculate best streak dynamically from completion history
+      final calculatedBestStreak = _calculateBestStreak(completionHistory);
+      
+      if (calculatedBestStreak > longest) {
+        longest = calculatedBestStreak;
       }
+      
+      final last30DaysCompleted = completionHistory.entries
+          .where((e) => last30Days.contains(e.key) && e.value == true)
+          .length;
+      totalCompletedDays += last30DaysCompleted;
 
-      // For weekly chart: if streak is N, it means last N days are completed
-      // Chart shows: Mon, Tue, Wed, Thu, Fri, Sat, Sun
-      // If today is Sunday and streak is 5, then Wed-Sun are completed
-      // We need to map: today (index 6) = Sun, yesterday (index 5) = Sat, etc.
-      // For each day in the week (0=Mon, 6=Sun), check if it's within the streak
-      // If streak is 5, days 2-6 (Wed-Sun) should be marked
-      for (var chartDayIndex = 0; chartDayIndex < 7; chartDayIndex++) {
-        // chartDayIndex: 0=Mon, 1=Tue, 2=Wed, 3=Thu, 4=Fri, 5=Sat, 6=Sun
-        // We assume today is Sunday (index 6)
-        // Days from today backwards: 6=Sun, 5=Sat, 4=Fri, 3=Thu, 2=Wed, 1=Tue, 0=Mon
-        // If streak is N, it covers days: 6, 5, 4, ..., (7-N+1)
-        // So day is covered if: (6 - chartDayIndex + 1) <= streak
-        // Which simplifies to: chartDayIndex >= (7 - streak)
-        final daysFromToday = 6 - chartDayIndex; // 6 for Mon, 0 for Sun
-        final dayNumber = daysFromToday + 1; // 1-based: 7 for Mon, 1 for Sun
-        if (streak >= dayNumber) {
-          weeklyStreakCount[chartDayIndex] += 1;
+      for (int i = 0; i < 7; i++) {
+        final date = now.subtract(Duration(days: i));
+        final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+        
+        if (completionHistory[dateKey] == true) {
+          final weekday = date.weekday;
+          final chartIndex = (weekday - 1) % 7;
+          weeklyStreakCount[chartIndex] += 1;
         }
       }
     }
 
-    // Adherence: average streak / 30 days * 100
-    final adherencePercent =
-        (((totalStreak / totalHabits) / 30) * 100).clamp(0, 100).toDouble();
+    adherence = totalHabits > 0
+        ? ((totalCompletedDays / (totalHabits * 30)) * 100).clamp(0, 100).toDouble()
+        : 0.0;
     
-    // Weekly data: normalize to percentage or show as count
-    // Show as total streak count per day (not percentage)
-    final weeklyData = weeklyStreakCount.map((count) => count).toList();
+    weeklyData = weeklyStreakCount;
+    longestStreak = longest;
 
-    setState(() {
-      _adherence = adherencePercent;
-      _longestStreak = longest;
-      _weeklyData = weeklyData;
-    });
+    return {
+      'adherence': adherence,
+      'longestStreak': longestStreak,
+      'weeklyData': weeklyData,
+    };
   }
 
   @override
   Widget build(BuildContext context) {
+    final habitProvider = context.watch<HabitProvider>();
+    final habits = habitProvider.habits;
+    
+    // Convert habits to map format for _calculateStats
+    final habitMaps = habits.map((habit) {
+      return {
+        'id': habit.id,
+        'name': habit.name,
+        'emoji': habit.emoji,
+        'streak': habit.streak,
+        'bestStreak': habit.bestStreak,
+        'completionHistory': habit.completionHistory,
+      };
+    }).toList();
+    
+    final stats = _calculateStats(habitMaps);
     return Scaffold(
       body: SafeArea(
         child: Column(
@@ -152,7 +210,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            '${_adherence.toStringAsFixed(0)}%',
+                            '${stats['adherence'].toStringAsFixed(0)}%',
                             style: const TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
@@ -192,7 +250,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                           ),
                           const SizedBox(height: 12),
                           Text(
-                            '$_longestStreak days',
+                            '${stats['longestStreak']} days',
                             style: const TextStyle(
                               fontSize: 28,
                               fontWeight: FontWeight.bold,
@@ -242,10 +300,11 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                           crossAxisAlignment: CrossAxisAlignment.end,
                           mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                           children: List.generate(
-                            _weeklyData.length,
+                            (stats['weeklyData'] as List<double>).length,
                             (index) => _buildBar(
                               _dayLabels[index],
-                              _weeklyData[index],
+                              (stats['weeklyData'] as List<double>)[index],
+                              (stats['weeklyData'] as List<double>),
                             ),
                           ),
                         ),
@@ -293,12 +352,12 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     );
   }
 
-  Widget _buildBar(String label, double value) {
+  Widget _buildBar(String label, double value, List<double> weeklyData) {
     // Value is the count of habits that have streak covering this day
     // Normalize to height: find max value first, then scale
-    final maxValue = _weeklyData.isEmpty 
+    final maxValue = weeklyData.isEmpty 
         ? 1.0 
-        : _weeklyData.reduce((a, b) => a > b ? a : b);
+        : weeklyData.reduce((a, b) => a > b ? a : b);
     const maxHeight = 120.0;
     final barHeight = maxValue > 0 
         ? (value / maxValue) * maxHeight 

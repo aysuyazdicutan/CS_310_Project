@@ -1,12 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/habit_provider.dart';
 
 class HabitEditScreen extends StatefulWidget {
+  final String habitId;
   final String habitName;
   final String habitEmoji;
   final Map<int, bool> completionHistory;
 
   const HabitEditScreen({
     super.key,
+    required this.habitId,
     required this.habitName,
     required this.habitEmoji,
     required this.completionHistory,
@@ -18,11 +22,184 @@ class HabitEditScreen extends StatefulWidget {
 
 class _HabitEditScreenState extends State<HabitEditScreen> {
   late Map<int, bool> _completionHistory;
+  bool _isSaving = false;
 
   @override
   void initState() {
     super.initState();
     _completionHistory = Map<int, bool>.from(widget.completionHistory);
+  }
+
+  Map<String, bool> _convertToDateMap(Map<int, bool> dayMap) {
+    final now = DateTime.now();
+    final currentYear = now.year;
+    final currentMonth = now.month;
+    final dateMap = <String, bool>{};
+    
+    dayMap.forEach((dayNumber, completed) {
+      if (completed && dayNumber >= 1 && dayNumber <= 28) {
+        // dayNumber is the day of the month (1-28)
+        try {
+          final date = DateTime(currentYear, currentMonth, dayNumber);
+          final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+          dateMap[dateKey] = true;
+        } catch (e) {
+          // Invalid date (e.g., day 31 in a month with 30 days)
+        }
+      }
+    });
+    
+    return dateMap;
+  }
+
+  int _calculateStreak(Map<String, bool> completionHistory) {
+    if (completionHistory.isEmpty) return 0;
+    
+    final today = DateTime.now();
+    final todayKey = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    
+    if (completionHistory[todayKey] != true) {
+      return 0;
+    }
+    
+    int streak = 1;
+    
+    for (int i = 1; i < 365; i++) {
+      final date = today.subtract(Duration(days: i));
+      final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+      
+      if (completionHistory[dateKey] == true) {
+        streak++;
+      } else {
+        break;
+      }
+    }
+    
+    return streak;
+  }
+
+  int _calculateBestStreak(Map<String, bool> completionHistory) {
+    if (completionHistory.isEmpty) return 0;
+    
+    final completedDates = <DateTime>[];
+    
+    completionHistory.forEach((dateKey, completed) {
+      if (completed == true) {
+        try {
+          final parts = dateKey.split('-');
+          if (parts.length == 3) {
+            final date = DateTime(
+              int.parse(parts[0]),
+              int.parse(parts[1]),
+              int.parse(parts[2]),
+            );
+            completedDates.add(date);
+          }
+        } catch (e) {
+          // Skip invalid dates
+        }
+      }
+    });
+    
+    if (completedDates.isEmpty) return 0;
+    
+    completedDates.sort((a, b) => b.compareTo(a));
+    
+    int maxStreak = 0;
+    int currentStreak = 1;
+    
+    for (int i = 0; i < completedDates.length - 1; i++) {
+      final currentDate = completedDates[i];
+      final nextDate = completedDates[i + 1];
+      final daysDiff = currentDate.difference(nextDate).inDays;
+      
+      if (daysDiff == 1) {
+        currentStreak++;
+      } else {
+        maxStreak = currentStreak > maxStreak ? currentStreak : maxStreak;
+        currentStreak = 1;
+      }
+    }
+    
+    maxStreak = currentStreak > maxStreak ? currentStreak : maxStreak;
+    return maxStreak;
+  }
+
+  Future<void> _saveChanges() async {
+    if (_isSaving) return;
+    
+    setState(() {
+      _isSaving = true;
+    });
+
+    try {
+      final habitProvider = context.read<HabitProvider>();
+      
+      final habit = await habitProvider.getHabit(widget.habitId);
+      if (habit == null) {
+        throw 'Habit not found';
+      }
+      
+      final now = DateTime.now();
+      final currentYear = now.year;
+      final currentMonth = now.month;
+      
+      // Remove all dates from current month (days 1-28)
+      final currentMonthDates = <String>[];
+      for (int day = 1; day <= 28; day++) {
+        try {
+          final date = DateTime(currentYear, currentMonth, day);
+          final dateKey = '${date.year}-${date.month.toString().padLeft(2, '0')}-${date.day.toString().padLeft(2, '0')}';
+          currentMonthDates.add(dateKey);
+        } catch (e) {
+          // Skip invalid dates (e.g., day 31 in a month with 30 days)
+        }
+      }
+      
+      final existingHistory = Map<String, bool>.from(habit.completionHistory);
+      
+      for (final dateKey in currentMonthDates) {
+        existingHistory.remove(dateKey);
+      }
+      
+      final editedDates = _convertToDateMap(_completionHistory);
+      existingHistory.addAll(editedDates);
+      
+      final newStreak = _calculateStreak(existingHistory);
+      final newBestStreak = _calculateBestStreak(existingHistory);
+      final finalBestStreak = newBestStreak > habit.bestStreak ? newBestStreak : habit.bestStreak;
+      
+      final success = await habitProvider.updateHabit(
+        habitId: widget.habitId,
+        completionHistory: existingHistory,
+        streak: newStreak,
+        bestStreak: finalBestStreak,
+      );
+      
+      if (!success && mounted) {
+        throw 'Failed to update habit';
+      }
+      
+      if (mounted) {
+        await Future.delayed(const Duration(milliseconds: 300));
+        Navigator.pop(context);
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error saving changes: $e'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+        });
+      }
+    }
   }
 
   void _toggleDay(int dayNumber) {
@@ -45,13 +222,39 @@ class _HabitEditScreenState extends State<HabitEditScreen> {
                   Row(
                     children: [
                       GestureDetector(
-                        onTap: () => Navigator.pop(context),
+                        onTap: _isSaving ? null : () => Navigator.pop(context),
                         child: const Icon(
                           Icons.arrow_back,
                           color: Color(0xFF9B59B6),
                           size: 28,
                         ),
                       ),
+                      const Spacer(),
+                      if (_isSaving)
+                        const Padding(
+                          padding: EdgeInsets.only(right: 8.0),
+                          child: SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              valueColor: AlwaysStoppedAnimation<Color>(
+                                Color(0xFF9B59B6),
+                              ),
+                            ),
+                          ),
+                        )
+                      else
+                        TextButton(
+                          onPressed: _saveChanges,
+                          child: const Text(
+                            'Save',
+                            style: TextStyle(
+                              color: Color(0xFF9B59B6),
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ),
                     ],
                   ),
                   const SizedBox(height: 16),

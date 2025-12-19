@@ -38,11 +38,6 @@ class _AddNewHabitScreenState extends State<AddNewHabitScreen> {
           : '✨', // Default emoji if none provided
       'daysPerWeek': _selectedDaysPerWeek ?? 7, // Default to 7 if not selected
     };
-
-    // Print the entered values
-    print('Habit Name: ${habitData['name']}');
-    print('Days per week: ${habitData['daysPerWeek']}');
-    print('Emoji: ${habitData['emoji']}');
     
     // Navigate back with the habit data
     Navigator.pop(context, habitData);
