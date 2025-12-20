@@ -10,6 +10,7 @@ class RemindersProvider extends ChangeNotifier {
   static const String _quietEndKey = 'reminders_quiet_end';
   static const String _remindersListKey = 'reminders_list';
 
+  String? _currentUserId;
   TimeOfDay _quietStart = const TimeOfDay(hour: 22, minute: 0);
   TimeOfDay _quietEnd = const TimeOfDay(hour: 8, minute: 0);
   List<Reminder> _reminders = [];
@@ -20,30 +21,53 @@ class RemindersProvider extends ChangeNotifier {
   List<Reminder> get reminders => List.unmodifiable(_reminders);
   bool get isLoading => _isLoading;
 
-  /// Load reminders and quiet hours from SharedPreferences
-  Future<void> loadFromStorage() async {
+  /// Get user-specific key
+  String _getUserKey(String baseKey, String userId) {
+    return '${baseKey}_$userId';
+  }
+
+  /// Clear state when user changes
+  void clear() {
+    _currentUserId = null;
+    _quietStart = const TimeOfDay(hour: 22, minute: 0);
+    _quietEnd = const TimeOfDay(hour: 8, minute: 0);
+    _reminders = [];
     _isLoading = true;
+    notifyListeners();
+  }
+
+  /// Load reminders and quiet hours from SharedPreferences for a specific user
+  Future<void> loadFromStorage(String userId) async {
+    // If same user, don't reload
+    if (_currentUserId == userId && !_isLoading) {
+      return;
+    }
+
+    _isLoading = true;
+    _currentUserId = userId;
     notifyListeners();
 
     try {
       final prefs = await SharedPreferences.getInstance();
 
-      // Load quiet hours
-      final quietStartHour = prefs.getInt('${_quietStartKey}_hour') ?? 22;
-      final quietStartMinute = prefs.getInt('${_quietStartKey}_minute') ?? 0;
+      // Load quiet hours with user-specific keys
+      final quietStartHour = prefs.getInt('${_getUserKey(_quietStartKey, userId)}_hour') ?? 22;
+      final quietStartMinute = prefs.getInt('${_getUserKey(_quietStartKey, userId)}_minute') ?? 0;
       _quietStart = TimeOfDay(hour: quietStartHour, minute: quietStartMinute);
 
-      final quietEndHour = prefs.getInt('${_quietEndKey}_hour') ?? 8;
-      final quietEndMinute = prefs.getInt('${_quietEndKey}_minute') ?? 0;
+      final quietEndHour = prefs.getInt('${_getUserKey(_quietEndKey, userId)}_hour') ?? 8;
+      final quietEndMinute = prefs.getInt('${_getUserKey(_quietEndKey, userId)}_minute') ?? 0;
       _quietEnd = TimeOfDay(hour: quietEndHour, minute: quietEndMinute);
 
-      // Load reminders list
-      final remindersJson = prefs.getString(_remindersListKey);
+      // Load reminders list with user-specific key
+      final remindersJson = prefs.getString(_getUserKey(_remindersListKey, userId));
       if (remindersJson != null) {
         final List<dynamic> decoded = json.decode(remindersJson);
         _reminders = decoded
             .map((json) => Reminder.fromJson(json as Map<String, dynamic>))
             .toList();
+      } else {
+        _reminders = [];
       }
 
       _isLoading = false;
@@ -55,22 +79,27 @@ class RemindersProvider extends ChangeNotifier {
     }
   }
 
-  /// Save reminders and quiet hours to SharedPreferences
+  /// Save reminders and quiet hours to SharedPreferences for current user
   Future<void> saveToStorage() async {
+    if (_currentUserId == null) {
+      debugPrint('Cannot save reminders: no user ID set');
+      return;
+    }
+
     try {
       final prefs = await SharedPreferences.getInstance();
 
-      // Save quiet hours
-      await prefs.setInt('${_quietStartKey}_hour', _quietStart.hour);
-      await prefs.setInt('${_quietStartKey}_minute', _quietStart.minute);
-      await prefs.setInt('${_quietEndKey}_hour', _quietEnd.hour);
-      await prefs.setInt('${_quietEndKey}_minute', _quietEnd.minute);
+      // Save quiet hours with user-specific keys
+      await prefs.setInt('${_getUserKey(_quietStartKey, _currentUserId!)}_hour', _quietStart.hour);
+      await prefs.setInt('${_getUserKey(_quietStartKey, _currentUserId!)}_minute', _quietStart.minute);
+      await prefs.setInt('${_getUserKey(_quietEndKey, _currentUserId!)}_hour', _quietEnd.hour);
+      await prefs.setInt('${_getUserKey(_quietEndKey, _currentUserId!)}_minute', _quietEnd.minute);
 
-      // Save reminders list
+      // Save reminders list with user-specific key
       final remindersJson = json.encode(
         _reminders.map((r) => r.toJson()).toList(),
       );
-      await prefs.setString(_remindersListKey, remindersJson);
+      await prefs.setString(_getUserKey(_remindersListKey, _currentUserId!), remindersJson);
     } catch (e) {
       debugPrint('Error saving reminders: $e');
     }
