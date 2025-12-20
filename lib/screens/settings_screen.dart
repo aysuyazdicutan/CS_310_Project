@@ -91,31 +91,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    // Backup & Export
-                    _buildSettingCard(
-                      onTap: _handleBackupAndExport,
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Backup & Export', style: theme.textTheme.titleLarge),
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: theme.brightness == Brightness.dark
-                                  ? Colors.white.withOpacity(0.08)
-                                  : const Color(0xFFADD8E6).withOpacity(0.3),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Icon(
-                              Icons.cloud_download,
-                              color: theme.colorScheme.primary,
-                              size: 24,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: 16),
                     // About
                     _buildSettingCard(
                       onTap: _showAboutApp,
@@ -180,23 +155,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
       ),
     );
   }
-
-  void _showSnack(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(message),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-
-  Future<void> _handleBackupAndExport() async {
-    _showSnack('Preparing your backup...');
-    await Future.delayed(const Duration(seconds: 1));
-    if (!mounted) return;
-    _showSnack('Backup ready to export!');
-  }
-
 
   void _showAboutApp() {
     showAboutDialog(

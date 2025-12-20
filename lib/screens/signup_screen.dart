@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../services/auth_service.dart';
+import '../providers/auth_provider.dart';
 import '../providers/settings_provider.dart';
 
 class SignUpScreen extends StatefulWidget {
@@ -52,27 +52,29 @@ class _SignUpScreenState extends State<SignUpScreen> {
   Future<void> _handleSignUp() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final authProvider = context.read<AuthProvider>();
+    
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
-    try {
-      final authService = AuthService();
-      await authService.signUp(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-      );
+    final success = await authProvider.signUp(
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
 
-      if (mounted) {
-        // DÜZELTİLDİ: Artık Personalization yerine direkt Home sayfasına gidiyor.
-        Navigator.pushReplacementNamed(context, '/home'); 
-      }
-    } catch (e) {
-      if (mounted) {
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+      
+      if (success) {
+        // Navigation will happen automatically via AppRouter
+        Navigator.pushReplacementNamed(context, '/home');
+      } else {
         setState(() {
-          _errorMessage = e.toString();
-          _isLoading = false;
+          _errorMessage = authProvider.errorMessage ?? 'Sign up failed. Please try again.';
         });
       }
     }

@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import '../providers/reminders_provider.dart';
 import '../providers/habit_provider.dart';
+import '../providers/auth_provider.dart';
 import '../models/reminder.dart';
 import '../models/habit.dart';
-import '../services/auth_service.dart';
 
 class RemindersScreen extends StatefulWidget {
   const RemindersScreen({super.key});
@@ -84,11 +83,6 @@ class _RemindersScreenState extends State<RemindersScreen> {
   }
 
   void _showAddReminderModal() {
-    final habitProvider = context.read<HabitProvider>();
-    final remindersProvider = context.read<RemindersProvider>();
-
-    // Get habits from HabitProvider
-    final userId = context.read<HabitProvider>().habitService as dynamic;
     // We'll need to get habits differently - let's use a StreamBuilder approach
     showModalBottomSheet(
       context: context,
@@ -476,8 +470,8 @@ class _AddReminderBottomSheetState extends State<_AddReminderBottomSheet> {
   Widget build(BuildContext context) {
     final habitProvider = context.read<HabitProvider>();
     final habitService = habitProvider.habitService;
-    final authService = AuthService();
-    final user = authService.currentUser;
+    final authProvider = context.read<AuthProvider>();
+    final user = authProvider.user;
 
     return Container(
       decoration: const BoxDecoration(

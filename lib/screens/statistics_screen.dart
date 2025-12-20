@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import '../services/habit_service.dart';
-import '../services/auth_service.dart';
+import '../providers/auth_provider.dart';
 import '../models/habit.dart';
 
 class StatisticsScreen extends StatefulWidget {
@@ -138,25 +138,18 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authService = AuthService();
+    final authProvider = context.watch<AuthProvider>();
     final habitService = HabitService();
     
-    return StreamBuilder<User?>(
-      stream: authService.authStateChanges,
-      builder: (context, authSnapshot) {
-        if (authSnapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-        
-        if (!authSnapshot.hasData || authSnapshot.data == null) {
-          return const Scaffold(
-            body: Center(child: Text('Please log in')),
-          );
-        }
-        
-        final userId = authSnapshot.data!.uid;
+    final user = authProvider.user;
+    
+    if (user == null) {
+      return const Scaffold(
+        body: Center(child: Text('Please log in')),
+      );
+    }
+    
+    final userId = user.uid;
         
         return StreamBuilder<List<Habit>>(
           stream: habitService.getHabitsStream(userId),
@@ -368,8 +361,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             );
           },
         );
-      },
-    );
   }
 
   Widget _buildBar(String label, double value, List<double> weeklyData) {
