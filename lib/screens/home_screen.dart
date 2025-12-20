@@ -1,11 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import '../models/habit.dart';
 import '../models/reminder.dart';
 import '../services/habit_service.dart';
-import '../services/auth_service.dart';
+import '../providers/auth_provider.dart';
 import '../providers/reminders_provider.dart';
 import '../providers/habit_provider.dart';
 import 'habit_detail_screen.dart';
@@ -226,7 +225,6 @@ class _HomeScreenState extends State<HomeScreen> {
   void _showReminderDialog(Reminder reminder, RemindersProvider provider) {
     if (!mounted) return;
 
-    final habitProvider = context.read<HabitProvider>();
     final timeString =
         '${reminder.timeOfDay.hour.toString().padLeft(2, '0')}:${reminder.timeOfDay.minute.toString().padLeft(2, '0')}';
 
@@ -397,27 +395,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authService = AuthService();
+    final authProvider = context.watch<AuthProvider>();
     final habitService = HabitService();
     
-    return StreamBuilder<User?>(
-      stream: authService.authStateChanges,
-      builder: (context, authSnapshot) {
-        // Loading auth state
-        if (authSnapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-        
-        // No authenticated user
-        if (!authSnapshot.hasData || authSnapshot.data == null) {
-          return const Scaffold(
-            body: Center(child: Text('Please log in')),
-          );
-        }
-        
-        final userId = authSnapshot.data!.uid;
+    final user = authProvider.user;
+    
+    if (user == null) {
+      return const Scaffold(
+        body: Center(child: Text('Please log in')),
+      );
+    }
+    
+    final userId = user.uid;
 
         return Scaffold(
           body: SafeArea(
@@ -937,8 +926,6 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
         );
-      },
-    );
   }
 }
 

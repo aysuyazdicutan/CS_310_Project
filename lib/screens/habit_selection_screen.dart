@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import '../services/habit_service.dart';
-import '../models/habit.dart';
 
 class HabitSelectionScreen extends StatefulWidget {
   final List<Map<String, dynamic>> allHabits;
@@ -48,51 +46,15 @@ class _HabitSelectionScreenState extends State<HabitSelectionScreen> {
       _isSaving = true;
     });
 
-    try {
-      final habitService = HabitService();
-      
-      // Find habits that were deselected (removed from selection)
-      final previouslySelected = widget.selectedHabitIds.isEmpty 
-          ? widget.allHabits.map((h) => h['id'] as String).toSet()
-          : widget.selectedHabitIds;
-      
-      final deselectedHabitIds = previouslySelected
-          .where((id) => !_selectedHabitIds.contains(id))
-          .toList();
-      
-      // Clear completion history for deselected habits
-      for (final habitId in deselectedHabitIds) {
-        final habit = await habitService.getHabit(habitId);
-        if (habit == null) continue;
-        
-        // Clear all completion history
-        final emptyHistory = <String, bool>{};
-        
-        // Recalculate streaks (will be 0 since no completions)
-        await habitService.updateHabit(
-          habitId: habitId,
-          completionHistory: emptyHistory,
-          streak: 0,
-          bestStreak: habit.bestStreak, // Keep best streak as historical record
-        );
-      }
-      
-      if (mounted) {
-        Navigator.pop(context, _selectedHabitIds);
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Error saving changes: $e'),
-            backgroundColor: Colors.red,
-          ),
-        );
-        setState(() {
-          _isSaving = false;
-        });
-      }
+    // Simply return the selected habit IDs - this is just for display filtering
+    // We don't modify any habit data here
+    if (mounted) {
+      Navigator.pop(context, _selectedHabitIds);
     }
+    
+    setState(() {
+      _isSaving = false;
+    });
   }
 
   @override

@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:provider/provider.dart';
-import 'package:firebase_auth/firebase_auth.dart' hide AuthProvider;
 import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
 import 'providers/habit_provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/reminders_provider.dart';
-import 'services/auth_service.dart';
 // Your Imports
 import 'screens/profile_screen.dart';
 import 'screens/settings_screen.dart';
@@ -140,35 +138,18 @@ class PerpetuaApp extends StatelessWidget {
   }
 }
 
-/// Top-level widget that reacts to authentication state using StreamBuilder.
+/// Top-level widget that reacts to authentication state using AuthProvider.
 class AppRouter extends StatelessWidget {
   const AppRouter({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final authService = AuthService();
-    
-    return StreamBuilder<User?>(
-      stream: authService.authStateChanges,
-      builder: (context, snapshot) {
-        // Loading state
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-        
-        // Error state
-        if (snapshot.hasError) {
-          return Scaffold(
-            body: Center(
-              child: Text('Error: ${snapshot.error}'),
-            ),
-          );
-        }
+    return Consumer<AuthProvider>(
+      builder: (context, authProvider, _) {
+        final user = authProvider.user;
         
         // No authenticated user - show login/signup flow
-        if (!snapshot.hasData || snapshot.data == null) {
+        if (user == null) {
           return const WelcomeScreen();
         }
         

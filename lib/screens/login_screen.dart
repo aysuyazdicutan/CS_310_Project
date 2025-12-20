@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart'; // Eklendi
-import '../services/auth_service.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 import 'signup_screen.dart';
-import '../providers/settings_provider.dart'; // Eklendi
+import '../providers/settings_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -49,26 +49,29 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
 
+    final authProvider = context.read<AuthProvider>();
+    
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
-    try {
-      final authService = AuthService();
-      await authService.signIn(
-        email: _emailController.text.trim(),
-        password: _passwordController.text,
-      );
+    final success = await authProvider.signIn(
+      email: _emailController.text.trim(),
+      password: _passwordController.text,
+    );
 
-      if (mounted) {
+    if (mounted) {
+      setState(() {
+        _isLoading = false;
+      });
+      
+      if (success) {
+        // Navigation will happen automatically via AppRouter
         Navigator.pushReplacementNamed(context, '/home');
-      }
-    } catch (e) {
-      if (mounted) {
+      } else {
         setState(() {
-          _errorMessage = e.toString();
-          _isLoading = false;
+          _errorMessage = authProvider.errorMessage ?? 'Login failed. Please try again.';
         });
       }
     }

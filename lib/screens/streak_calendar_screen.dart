@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import '../services/habit_service.dart';
-import '../services/auth_service.dart';
+import '../providers/auth_provider.dart';
 import '../models/habit.dart';
 import 'habit_selection_screen.dart';
 
@@ -14,13 +14,13 @@ class StreakCalendarScreen extends StatefulWidget {
 
 class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
   DateTime _currentDate = DateTime.now();
-  late Set<String> _selectedHabitIds;
+  Set<String>? _selectedHabitIds; // null = show all, empty set = show none, populated set = show selected
 
   @override
   void initState() {
     super.initState();
-    // Initially, all habits are selected (empty set means show all)
-    _selectedHabitIds = {};
+    // Initially, all habits are selected (null means show all)
+    _selectedHabitIds = null;
   }
 
   String _getMonthYearString(DateTime date) {
@@ -140,8 +140,8 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
     
     for (var habit in habits) {
       final habitId = habit['id'] as String;
-      // If no habits are selected, show all. Otherwise, only show selected habits.
-      if (_selectedHabitIds.isEmpty || _selectedHabitIds.contains(habitId)) {
+      // null = show all, empty set = show none, populated set = show selected only
+      if (_selectedHabitIds == null || _selectedHabitIds!.contains(habitId)) {
         // completionHistory can be either Map<String, bool> (date format) or Map<int, bool> (legacy)
         final completionHistory = habit['completionHistory'];
         
@@ -164,25 +164,18 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final authService = AuthService();
+    final authProvider = context.watch<AuthProvider>();
     final habitService = HabitService();
     
-    return StreamBuilder<User?>(
-      stream: authService.authStateChanges,
-      builder: (context, authSnapshot) {
-        if (authSnapshot.connectionState == ConnectionState.waiting) {
-          return const Scaffold(
-            body: Center(child: CircularProgressIndicator()),
-          );
-        }
-        
-        if (!authSnapshot.hasData || authSnapshot.data == null) {
-          return const Scaffold(
-            body: Center(child: Text('Please log in')),
-          );
-        }
-        
-        final userId = authSnapshot.data!.uid;
+    final user = authProvider.user;
+    
+    if (user == null) {
+      return const Scaffold(
+        body: Center(child: Text('Please log in')),
+      );
+    }
+    
+    final userId = user.uid;
         
         return StreamBuilder<List<Habit>>(
           stream: habitService.getHabitsStream(userId),
@@ -381,8 +374,8 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: habits
                         .where((habit) {
-                          // Show all habits in legend if none selected, otherwise only selected ones
-                          return _selectedHabitIds.isEmpty || _selectedHabitIds.contains(habit.id);
+                          // null = show all, empty set = show none, populated set = show selected only
+                          return _selectedHabitIds == null || _selectedHabitIds!.contains(habit.id);
                         })
                         .map((habit) {
                       return Padding(
@@ -425,12 +418,16 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
                   ),
                   child: TextButton(
                     onPressed: () async {
+                      // If _selectedHabitIds is null (initial state), pass all habit IDs
+                      final initialSelection = _selectedHabitIds ?? 
+                          habits.map((h) => h.id).toSet();
+                      
                       final result = await Navigator.push<Set<String>>(
                         context,
                         MaterialPageRoute(
                           builder: (context) => HabitSelectionScreen(
                             allHabits: habitsMap,
-                            selectedHabitIds: _selectedHabitIds,
+                            selectedHabitIds: initialSelection,
                           ),
                         ),
                       );
@@ -460,8 +457,6 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
             );
           },
         );
-      },
-    );
   }
 }
 
