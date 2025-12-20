@@ -1,4 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../providers/reminders_provider.dart';
+import '../providers/habit_provider.dart';
+import '../models/reminder.dart';
+import '../models/habit.dart';
+import '../services/auth_service.dart';
 
 class RemindersScreen extends StatefulWidget {
   const RemindersScreen({super.key});
@@ -8,484 +15,346 @@ class RemindersScreen extends StatefulWidget {
 }
 
 class _RemindersScreenState extends State<RemindersScreen> {
-  final List<Map<String, dynamic>> _availableHabits = [];
-  final List<Map<String, dynamic>> _selectedReminders = [];
-  bool _hasLoadedHabits = false;
-
-  String _quietStart = '22.00';
-  String _quietEnd = '08.00';
-
   @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    if (_hasLoadedHabits) return;
-
-    final args = ModalRoute.of(context)?.settings.arguments;
-    if (args is List) {
-      final mappedHabits = args
-          .whereType<Map>()
-          .map((habit) => {
-                'id': habit['id']?.toString() ?? '',
-                'name': habit['name']?.toString() ?? 'Habit',
-                'emoji': habit['emoji']?.toString() ?? '✨',
-              })
-          .toList();
-      _availableHabits
-        ..clear()
-        ..addAll(mappedHabits);
-    }
-    _hasLoadedHabits = true;
-  }
-
-  void _toggleReminder(int index) {
-    setState(() {
-      final current = _selectedReminders[index];
-      _selectedReminders[index] = {
-        ...current,
-        'enabled': !(current['enabled'] as bool? ?? true),
-      };
+  void initState() {
+    super.initState();
+    // Load reminders from storage when screen opens
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final remindersProvider = context.read<RemindersProvider>();
+      remindersProvider.loadFromStorage();
     });
   }
 
-  void _showHabitPicker() {
-    if (_availableHabits.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('No habits available to add.'),
-        ),
-      );
-      return;
-    }
+  Future<void> _editQuietHour({required bool isStart}) async {
+    final remindersProvider = context.read<RemindersProvider>();
+    final currentTime = isStart
+        ? remindersProvider.quietStart
+        : remindersProvider.quietEnd;
 
+    final pickedTime = await showTimePicker(
+      context: context,
+      initialTime: currentTime,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF6B46C1),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (pickedTime != null) {
+      if (isStart) {
+        await remindersProvider.updateQuietHours(
+          start: pickedTime,
+          end: remindersProvider.quietEnd,
+        );
+      } else {
+        await remindersProvider.updateQuietHours(
+          start: remindersProvider.quietStart,
+          end: pickedTime,
+        );
+      }
+    }
+  }
+
+  Future<void> _editReminderTime(Reminder reminder) async {
+    final remindersProvider = context.read<RemindersProvider>();
+    final pickedTime = await showTimePicker(
+      context: context,
+      initialTime: reminder.timeOfDay,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF6B46C1),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (pickedTime != null) {
+      await remindersProvider.updateReminderTime(reminder.id, pickedTime);
+    }
+  }
+
+  void _showAddReminderModal() {
+    final habitProvider = context.read<HabitProvider>();
+    final remindersProvider = context.read<RemindersProvider>();
+
+    // Get habits from HabitProvider
+    final userId = context.read<HabitProvider>().habitService as dynamic;
+    // We'll need to get habits differently - let's use a StreamBuilder approach
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
+      isScrollControlled: true,
       builder: (context) {
-        return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(24),
-              topRight: Radius.circular(24),
-            ),
-          ),
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: SafeArea(
-            top: false,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 40,
-                  height: 4,
-                  margin: const EdgeInsets.only(bottom: 16),
-                  decoration: BoxDecoration(
-                    color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-                const Text(
-                  'Select Habit',
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    fontStyle: FontStyle.italic,
-                    color: Color(0xFF2C3E50),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Flexible(
-                  child: ListView.builder(
-                    shrinkWrap: true,
-                    itemCount: _availableHabits.length,
-                    itemBuilder: (context, index) {
-                      final habit = _availableHabits[index];
-                      final alreadyAdded = _selectedReminders
-                          .any((reminder) => reminder['id'] == habit['id']);
-                      return ListTile(
-                        leading: Text(
-                          habit['emoji'] as String,
-                          style: const TextStyle(fontSize: 24),
-                        ),
-                        title: Text(
-                          habit['name'] as String,
-                          style: const TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w600,
-                            color: Color(0xFF2C3E50),
-                          ),
-                        ),
-                        trailing: alreadyAdded
-                            ? const Icon(
-                                Icons.check_circle,
-                                color: Color(0xFF6B46C1),
-                              )
-                            : const Icon(Icons.add_circle_outline),
-                        onTap: alreadyAdded
-                            ? null
-                            : () {
-                                setState(() {
-                                  _selectedReminders.add({
-                                    'id': habit['id'],
-                                    'name': habit['name'],
-                                    'emoji': habit['emoji'],
-                                    'time': '08.00',
-                                    'enabled': true,
-                                  });
-                                });
-                                Navigator.pop(context);
-                              },
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
+        return const _AddReminderBottomSheet();
       },
     );
   }
 
-  Future<void> _editQuietHour({required bool isStart}) async {
-    final result = await _promptForTime(
-      title: isStart ? 'Night Start' : 'Night End',
-      initialValue: isStart ? _quietStart : _quietEnd,
-    );
-    if (result != null) {
-      setState(() {
-        if (isStart) {
-          _quietStart = result;
-        } else {
-          _quietEnd = result;
-        }
-      });
-    }
-  }
-
-  Future<void> _editReminderTime(int index) async {
-    final current = _selectedReminders[index];
-    final result = await _promptForTime(
-      title: '${current['name']} time',
-      initialValue: current['time'] as String,
-    );
-    if (result != null) {
-      setState(() {
-        _selectedReminders[index] = {
-          ...current,
-          'time': result,
-        };
-      });
-    }
-  }
-
-  Future<String?> _promptForTime({
-    required String title,
-    required String initialValue,
-  }) async {
-    final controller = TextEditingController(text: initialValue);
-    final rootContext = context;
-
-    return showDialog<String>(
-      context: context,
-      builder: (dialogContext) {
-        return AlertDialog(
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(16),
-          ),
-          title: Text(
-            title,
-            style: const TextStyle(
-              fontStyle: FontStyle.italic,
-              color: Color(0xFF2C3E50),
-            ),
-          ),
-          content: TextField(
-            controller: controller,
-            keyboardType: TextInputType.number,
-            decoration: const InputDecoration(
-              hintText: 'HH.mm',
-              border: OutlineInputBorder(),
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Cancel'),
-            ),
-            ElevatedButton(
-              onPressed: () {
-                final formatted = _formatTime(controller.text.trim());
-                if (formatted == null) {
-                  ScaffoldMessenger.of(rootContext).showSnackBar(
-                    const SnackBar(
-                      content: Text('Please enter a valid time in HH.mm format.'),
-                    ),
-                  );
-                  return;
-                }
-                Navigator.of(dialogContext).pop(formatted);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6B46C1),
-                foregroundColor: Colors.white,
-              ),
-              child: const Text('Save'),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  String? _formatTime(String value) {
-    if (value.isEmpty) return null;
-    final sanitized = value.replaceAll(':', '.');
-    final parts = sanitized.split('.');
-    if (parts.length != 2) return null;
-    final hour = int.tryParse(parts[0]);
-    final minute = int.tryParse(parts[1]);
-    if (hour == null || minute == null) return null;
-    if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
-    final hourString = hour.toString().padLeft(2, '0');
-    final minuteString = minute.toString().padLeft(2, '0');
-    return '$hourString.$minuteString';
+  String _formatTimeOfDay(TimeOfDay time) {
+    return '${time.hour.toString().padLeft(2, '0')}.${time.minute.toString().padLeft(2, '0')}';
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: SafeArea(
-        child: Column(
-          children: [
-            // App Bar
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Row(
-                children: [
-                  IconButton(
-                    icon: const Icon(
-                      Icons.arrow_back,
-                      color: Color(0xFF6B46C1),
-                      size: 28,
-                    ),
-                    onPressed: () => Navigator.pop(context),
-                  ),
-                  const Expanded(
-                    child: Text(
-                      'Reminders',
-                      textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.w600,
-                        fontStyle: FontStyle.italic,
-                        color: Color(0xFF2C3E50),
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 48), // Balance the back button
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            // Quiet Hours Card
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: Container(
-                padding: const EdgeInsets.all(20.0),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Text(
-                      'Quiet Hours',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.w600,
-                        fontStyle: FontStyle.italic,
-                        color: Color(0xFF2C3E50),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: [
-                        GestureDetector(
-                          onTap: () => _editQuietHour(isStart: true),
-                          child: _QuietHourChip(
-                            icon: Icons.nightlight_round,
-                            label: _quietStart,
-                          ),
+        child: Consumer<RemindersProvider>(
+          builder: (context, remindersProvider, _) {
+            if (remindersProvider.isLoading) {
+              return const Center(child: CircularProgressIndicator());
+            }
+
+            return Column(
+              children: [
+                // App Bar
+                Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(
+                          Icons.arrow_back,
+                          color: Color(0xFF6B46C1),
+                          size: 28,
                         ),
-                        GestureDetector(
-                          onTap: () => _editQuietHour(isStart: false),
-                          child: _QuietHourChip(
-                            icon: Icons.wb_sunny,
-                            label: _quietEnd,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            // Reminders List
-            Expanded(
-              child: _selectedReminders.isEmpty
-                  ? const Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 40),
-                      child: Center(
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                      const Expanded(
                         child: Text(
-                          'You haven\'t added any reminders yet. Tap the + button below to select a habit.',
+                          'Reminders',
                           textAlign: TextAlign.center,
                           style: TextStyle(
-                            fontSize: 16,
-                            fontWeight: FontWeight.w500,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w600,
+                            fontStyle: FontStyle.italic,
                             color: Color(0xFF2C3E50),
                           ),
                         ),
                       ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                      itemCount: _selectedReminders.length,
-                      itemBuilder: (context, index) {
-                        final reminder = _selectedReminders[index];
-                        final emoji = reminder['emoji'] as String? ?? '📝';
-                        final name = reminder['name'] as String? ?? 'Habit';
-                        final time = reminder['time'] as String? ?? '00.00';
-                        final isEnabled = reminder['enabled'] as bool? ?? true;
-
-                        return Container(
-                          margin: const EdgeInsets.only(bottom: 16),
-                          padding: const EdgeInsets.all(16),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.05),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
-                              ),
-                            ],
+                      const SizedBox(width: 48), // Balance the back button
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20),
+                // Quiet Hours Card
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                  child: Container(
+                    padding: const EdgeInsets.all(20.0),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 8,
+                          offset: const Offset(0, 2),
+                        ),
+                      ],
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Quiet Hours',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.w600,
+                            fontStyle: FontStyle.italic,
+                            color: Color(0xFF2C3E50),
                           ),
-                          child: Row(
-                            children: [
-                              // Emoji
-                              Container(
-                                width: 48,
-                                height: 48,
-                                decoration: BoxDecoration(
-                                  color: const Color(0xFFE6F2FA),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                alignment: Alignment.center,
-                                child: Text(
-                                  emoji,
-                                  style: const TextStyle(fontSize: 24),
+                        ),
+                        const SizedBox(height: 16),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceAround,
+                          children: [
+                            GestureDetector(
+                              onTap: () => _editQuietHour(isStart: true),
+                              child: _QuietHourChip(
+                                icon: Icons.nightlight_round,
+                                label: _formatTimeOfDay(
+                                  remindersProvider.quietStart,
                                 ),
                               ),
-                              const SizedBox(width: 16),
-                              // Title and Time
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      name,
-                                      style: const TextStyle(
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.w600,
-                                        fontStyle: FontStyle.italic,
-                                        color: Color(0xFF2C3E50),
-                                      ),
+                            ),
+                            GestureDetector(
+                              onTap: () => _editQuietHour(isStart: false),
+                              child: _QuietHourChip(
+                                icon: Icons.wb_sunny,
+                                label: _formatTimeOfDay(
+                                  remindersProvider.quietEnd,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 24),
+                // Reminders List
+                Expanded(
+                  child: remindersProvider.reminders.isEmpty
+                      ? const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 40),
+                          child: Center(
+                            child: Text(
+                              'You haven\'t added any reminders yet. Tap the + button below to select a habit.',
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                color: Color(0xFF2C3E50),
+                              ),
+                            ),
+                          ),
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                          itemCount: remindersProvider.reminders.length,
+                          itemBuilder: (context, index) {
+                            final reminder = remindersProvider.reminders[index];
+
+                            return Container(
+                              margin: const EdgeInsets.only(bottom: 16),
+                              padding: const EdgeInsets.all(16),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(16),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.05),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  // Emoji
+                                  Container(
+                                    width: 48,
+                                    height: 48,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFE6F2FA),
+                                      borderRadius: BorderRadius.circular(12),
                                     ),
-                                    const SizedBox(height: 4),
-                                    GestureDetector(
-                                      onTap: () => _editReminderTime(index),
-                                      child: Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 8,
-                                          vertical: 4,
-                                        ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white,
-                                          borderRadius: BorderRadius.circular(8),
-                                          border: Border.all(
-                                            color: const Color(0xFFE0E0E0),
-                                          ),
-                                        ),
-                                        child: Text(
-                                          time,
+                                    alignment: Alignment.center,
+                                    child: Text(
+                                      reminder.habitEmoji,
+                                      style: const TextStyle(fontSize: 24),
+                                    ),
+                                  ),
+                                  const SizedBox(width: 16),
+                                  // Title and Time
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          reminder.habitTitle,
                                           style: const TextStyle(
-                                            fontSize: 14,
-                                            fontWeight: FontWeight.w500,
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.w600,
+                                            fontStyle: FontStyle.italic,
                                             color: Color(0xFF2C3E50),
                                           ),
                                         ),
-                                      ),
+                                        const SizedBox(height: 4),
+                                        GestureDetector(
+                                          onTap: () =>
+                                              _editReminderTime(reminder),
+                                          child: Container(
+                                            padding: const EdgeInsets.symmetric(
+                                              horizontal: 8,
+                                              vertical: 4,
+                                            ),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              borderRadius:
+                                                  BorderRadius.circular(8),
+                                              border: Border.all(
+                                                color: const Color(0xFFE0E0E0),
+                                              ),
+                                            ),
+                                            child: Text(
+                                              _formatTimeOfDay(
+                                                reminder.timeOfDay,
+                                              ),
+                                              style: const TextStyle(
+                                                fontSize: 14,
+                                                fontWeight: FontWeight.w500,
+                                                color: Color(0xFF2C3E50),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                  ],
-                                ),
+                                  ),
+                                  // Toggle Switch
+                                  Switch(
+                                    value: reminder.enabled,
+                                    onChanged: (_) {
+                                      remindersProvider.toggleReminder(
+                                        reminder.id,
+                                      );
+                                    },
+                                    activeColor: const Color(0xFF6B46C1),
+                                  ),
+                                ],
                               ),
-                              // Toggle Switch
-                              Switch(
-                                value: isEnabled,
-                                onChanged: (_) => _toggleReminder(index),
-                                activeColor: const Color(0xFF6B46C1),
-                              ),
-                            ],
+                            );
+                          },
+                        ),
+                ),
+                const SizedBox(height: 16),
+                // Add Button
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 20.0),
+                  child: GestureDetector(
+                    onTap: _showAddReminderModal,
+                    child: Container(
+                      width: 64,
+                      height: 64,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white,
+                        border: Border.all(
+                          color: const Color(0xFF2C3E50),
+                          width: 2,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.1),
+                            blurRadius: 8,
+                            offset: const Offset(0, 2),
                           ),
-                        );
-                      },
-                    ),
-            ),
-            const SizedBox(height: 16),
-            // Add Button
-            Padding(
-              padding: const EdgeInsets.only(bottom: 20.0),
-              child: GestureDetector(
-                onTap: _showHabitPicker,
-                child: Container(
-                  width: 64,
-                  height: 64,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white,
-                    border: Border.all(
-                      color: const Color(0xFF2C3E50),
-                      width: 2,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.1),
-                        blurRadius: 8,
-                        offset: const Offset(0, 2),
+                        ],
                       ),
-                    ],
-                  ),
-                  child: const Icon(
-                    Icons.add,
-                    color: Color(0xFF2C3E50),
-                    size: 32,
+                      child: const Icon(
+                        Icons.add,
+                        color: Color(0xFF2C3E50),
+                        size: 32,
+                      ),
+                    ),
                   ),
                 ),
-              ),
-            ),
-          ],
+              ],
+            );
+          },
         ),
       ),
     );
@@ -532,3 +401,272 @@ class _QuietHourChip extends StatelessWidget {
   }
 }
 
+class _AddReminderBottomSheet extends StatefulWidget {
+  const _AddReminderBottomSheet();
+
+  @override
+  State<_AddReminderBottomSheet> createState() =>
+      _AddReminderBottomSheetState();
+}
+
+class _AddReminderBottomSheetState extends State<_AddReminderBottomSheet> {
+  String? _selectedHabitId;
+  TimeOfDay _selectedTime = const TimeOfDay(hour: 8, minute: 0);
+
+  Future<void> _selectTime() async {
+    final pickedTime = await showTimePicker(
+      context: context,
+      initialTime: _selectedTime,
+      builder: (context, child) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            colorScheme: const ColorScheme.light(
+              primary: Color(0xFF6B46C1),
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (pickedTime != null) {
+      setState(() {
+        _selectedTime = pickedTime;
+      });
+    }
+  }
+
+  Future<void> _saveReminder() async {
+    if (_selectedHabitId == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Please select a habit'),
+        ),
+      );
+      return;
+    }
+
+    // Get habit details from HabitProvider
+    final habitProvider = context.read<HabitProvider>();
+    final habit = await habitProvider.getHabit(_selectedHabitId!);
+    
+    if (habit == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Habit not found'),
+        ),
+      );
+      return;
+    }
+
+    final remindersProvider = context.read<RemindersProvider>();
+    await remindersProvider.addReminder(
+      habitId: _selectedHabitId!,
+      habitTitle: habit.name,
+      habitEmoji: habit.emoji,
+      timeOfDay: _selectedTime,
+    );
+
+    if (mounted) {
+      Navigator.pop(context);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final habitProvider = context.read<HabitProvider>();
+    final habitService = habitProvider.habitService;
+    final authService = AuthService();
+    final user = authService.currentUser;
+
+    return Container(
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(24),
+          topRight: Radius.circular(24),
+        ),
+      ),
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+      child: SafeArea(
+        top: false,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              width: 40,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: 16),
+              decoration: BoxDecoration(
+                color: Colors.grey[300],
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
+            const Text(
+              'Add Reminder',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w600,
+                fontStyle: FontStyle.italic,
+                color: Color(0xFF2C3E50),
+              ),
+            ),
+            const SizedBox(height: 24),
+            // Habit Selection with StreamBuilder
+            if (user == null)
+              const Padding(
+                padding: EdgeInsets.all(16.0),
+                child: Text(
+                  'Please log in to add reminders.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 14,
+                    color: Color(0xFF2C3E50),
+                  ),
+                ),
+              )
+            else
+              StreamBuilder<List<Habit>>(
+                stream: habitService.getHabitsStream(user.uid),
+                builder: (context, snapshot) {
+                  if (snapshot.connectionState == ConnectionState.waiting) {
+                    return const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: CircularProgressIndicator(),
+                    );
+                  }
+
+                  if (snapshot.hasError) {
+                    return Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        'Error loading habits: ${snapshot.error}',
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(
+                          fontSize: 14,
+                          color: Colors.red,
+                        ),
+                      ),
+                    );
+                  }
+
+                  final habits = snapshot.data ?? [];
+                  if (habits.isEmpty) {
+                    return const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Text(
+                        'No habits available. Please add a habit first.',
+                        textAlign: TextAlign.center,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: Color(0xFF2C3E50),
+                        ),
+                      ),
+                    );
+                  }
+
+                  return Container(
+                    constraints: const BoxConstraints(maxHeight: 200),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: const Color(0xFFE0E0E0)),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: ListView.builder(
+                      shrinkWrap: true,
+                      itemCount: habits.length,
+                      itemBuilder: (context, index) {
+                        final habit = habits[index];
+                        final isSelected = _selectedHabitId == habit.id;
+                        return ListTile(
+                          leading: Text(
+                            habit.emoji,
+                            style: const TextStyle(fontSize: 24),
+                          ),
+                          title: Text(
+                            habit.name,
+                            style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w600,
+                              color: Color(0xFF2C3E50),
+                            ),
+                          ),
+                          trailing: isSelected
+                              ? const Icon(
+                                  Icons.check_circle,
+                                  color: Color(0xFF6B46C1),
+                                )
+                              : const Icon(Icons.radio_button_unchecked),
+                          onTap: () {
+                            setState(() {
+                              _selectedHabitId = habit.id;
+                            });
+                          },
+                        );
+                      },
+                    ),
+                  );
+                },
+              ),
+            const SizedBox(height: 16),
+            // Time Selection
+            GestureDetector(
+              onTap: _selectTime,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  border: Border.all(color: const Color(0xFFE0E0E0)),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Time',
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: Color(0xFF2C3E50),
+                      ),
+                    ),
+                    Text(
+                      '${_selectedTime.hour.toString().padLeft(2, '0')}:${_selectedTime.minute.toString().padLeft(2, '0')}',
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Color(0xFF2C3E50),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            const SizedBox(height: 24),
+            // Save Button
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: _saveReminder,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF6B46C1),
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                child: const Text(
+                  'Save',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 16),
+          ],
+        ),
+      ),
+    );
+  }
+}
