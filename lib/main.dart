@@ -139,14 +139,32 @@ class PerpetuaApp extends StatelessWidget {
 }
 
 /// Top-level widget that reacts to authentication state using AuthProvider.
-class AppRouter extends StatelessWidget {
+class AppRouter extends StatefulWidget {
   const AppRouter({super.key});
+
+  @override
+  State<AppRouter> createState() => _AppRouterState();
+}
+
+class _AppRouterState extends State<AppRouter> {
+  String? _previousUserId;
 
   @override
   Widget build(BuildContext context) {
     return Consumer<AuthProvider>(
       builder: (context, authProvider, _) {
         final user = authProvider.user;
+        final currentUserId = user?.uid;
+        
+        // Clear reminders when user changes
+        if (_previousUserId != null && _previousUserId != currentUserId) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            final remindersProvider = context.read<RemindersProvider>();
+            remindersProvider.clear();
+          });
+        }
+        
+        _previousUserId = currentUserId;
         
         // No authenticated user - show login/signup flow
         if (user == null) {

@@ -188,16 +188,20 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     // Load reminders from storage
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authProvider = context.read<AuthProvider>();
       final remindersProvider = context.read<RemindersProvider>();
-      remindersProvider.loadFromStorage().then((_) {
-        // Check reminders immediately after loading
-        _checkReminders();
-        // Then check every minute
-        _reminderCheckTimer = Timer.periodic(
-          const Duration(minutes: 1),
-          (_) => _checkReminders(),
-        );
-      });
+      final userId = authProvider.user?.uid;
+      if (userId != null) {
+        remindersProvider.loadFromStorage(userId).then((_) {
+          // Check reminders immediately after loading
+          _checkReminders();
+          // Then check every minute
+          _reminderCheckTimer = Timer.periodic(
+            const Duration(minutes: 1),
+            (_) => _checkReminders(),
+          );
+        });
+      }
     });
   }
 

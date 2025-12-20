@@ -19,8 +19,12 @@ class _RemindersScreenState extends State<RemindersScreen> {
     super.initState();
     // Load reminders from storage when screen opens
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      final authProvider = context.read<AuthProvider>();
       final remindersProvider = context.read<RemindersProvider>();
-      remindersProvider.loadFromStorage();
+      final userId = authProvider.user?.uid;
+      if (userId != null) {
+        remindersProvider.loadFromStorage(userId);
+      }
     });
   }
 
