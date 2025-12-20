@@ -6,6 +6,7 @@ import 'firebase_options.dart';
 import 'providers/auth_provider.dart';
 import 'providers/habit_provider.dart';
 import 'providers/settings_provider.dart';
+import 'providers/reminders_provider.dart';
 import 'services/auth_service.dart';
 // Your Imports
 import 'screens/profile_screen.dart';
@@ -37,6 +38,7 @@ void main() async {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => HabitProvider()),
         ChangeNotifierProvider.value(value: settingsProvider),
+        ChangeNotifierProvider(create: (_) => RemindersProvider()),
       ],
       child: const PerpetuaApp(),
     ),
