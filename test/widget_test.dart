@@ -1,30 +1,81 @@
-// This is a basic Flutter widget test.
-//
-// To perform an interaction with a widget in your test, use the WidgetTester
-// utility in the flutter_test package. For example, you can send tap and scroll
-// gestures. You can also use WidgetTester to find child widgets in the widget
-// tree, read text, and verify that the values of widget properties are correct.
-
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-
-import 'package:perpetua/main.dart';
+import 'package:provider/provider.dart';
+import 'package:perpetua/screens/welcome_screen.dart';
+import 'package:perpetua/providers/settings_provider.dart';
 
 void main() {
-  testWidgets('Counter increments smoke test', (WidgetTester tester) async {
-    // Build our app and trigger a frame.
-    await tester.pumpWidget(const MyApp());
+  group('WelcomeScreen Widget Tests', () {
+    testWidgets('WelcomeScreen should display welcome text and PERPETUA title',
+        (WidgetTester tester) async {
+      // Create a mock SettingsProvider
+      final settingsProvider = SettingsProvider();
 
-    // Verify that our counter starts at 0.
-    expect(find.text('0'), findsOneWidget);
-    expect(find.text('1'), findsNothing);
+      await tester.pumpWidget(
+        MaterialApp(
+          home: ChangeNotifierProvider<SettingsProvider>(
+            create: (_) => settingsProvider,
+            child: const WelcomeScreen(),
+          ),
+        ),
+      );
 
-    // Tap the '+' icon and trigger a frame.
-    await tester.tap(find.byIcon(Icons.add));
-    await tester.pump();
+      // Wait for the widget to load
+      await tester.pumpAndSettle();
 
-    // Verify that our counter has incremented.
-    expect(find.text('0'), findsNothing);
-    expect(find.text('1'), findsOneWidget);
+      // Verify that "Welcome to" text is displayed
+      expect(find.text('Welcome to'), findsOneWidget);
+
+      // Verify that "PERPETUA" title is displayed
+      expect(find.text('PERPETUA'), findsOneWidget);
+
+      // Verify that the slogan text is displayed
+      expect(
+          find.textContaining(
+              "Build positive habits and keep your streak alive"),
+          findsOneWidget);
+
+      // Verify that "Get Started" button is displayed
+      expect(find.text('Get Started'), findsOneWidget);
+    });
+
+    testWidgets('WelcomeScreen should have Get Started button that is tappable',
+        (WidgetTester tester) async {
+      // Create a mock SettingsProvider
+      final settingsProvider = SettingsProvider();
+
+      await tester.pumpWidget(
+        MaterialApp(
+          routes: {
+            '/login': (context) => const Scaffold(
+                  body: Text('Login Screen'),
+                ),
+          },
+          home: ChangeNotifierProvider<SettingsProvider>(
+            create: (_) => settingsProvider,
+            child: const WelcomeScreen(),
+          ),
+        ),
+      );
+
+      // Wait for the widget to load
+      await tester.pumpAndSettle();
+
+      // Find the Get Started button by type
+      final getStartedButton = find.byType(ElevatedButton);
+      expect(getStartedButton, findsOneWidget);
+
+      // Verify the button is tappable
+      expect(tester.widget<ElevatedButton>(getStartedButton).onPressed,
+          isNotNull);
+
+      // Tap the button
+      await tester.tap(getStartedButton);
+      await tester.pumpAndSettle();
+
+      // Verify navigation occurred (this will navigate to /login route)
+      // Note: Since we're not using a full navigation setup, we just verify
+      // that the button tap doesn't throw an error
+    });
   });
 }
