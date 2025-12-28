@@ -74,10 +74,18 @@ Before you begin, ensure you have the following installed:
 
 ### 1. Clone the Repository
 
+```bash
 git clone <repository-url>
-cd CS_310_Project### 2. Install Flutter Dependencies
+cd CS_310_Project
+```
 
-flutter pub get### 3. Firebase Configuration
+### 2. Install Flutter Dependencies
+
+```bash
+flutter pub get
+```
+
+### 3. Firebase Configuration
 
 This project uses Firebase for authentication and data storage. Firebase is already configured for the project, but if you need to set it up for a new Firebase project:
 
@@ -101,26 +109,146 @@ This project uses Firebase for authentication and data storage. Firebase is alre
 
 ### 4. Verify Flutter Installation
 
-flutter doctorEnsure all required components are installed and properly configured.
+```bash
+flutter doctor
+```
+
+Ensure all required components are installed and properly configured.
 
 ### 5. Run the Application
 
 #### For Android:
-flutter runOr specify a device:
-flutter run -d <device-id>#### For iOS (macOS only):
+```bash
+flutter run
+```
+
+Or specify a device:
+```bash
+flutter run -d <device-id>
+```
+
+#### For iOS (macOS only):
+```bash
 flutter run -d ios
+```
+
 #### For Web:
-flutter run -d chrome### 6. Build for Release
+```bash
+flutter run -d chrome
+```
+
+### 6. Build for Release
 
 #### Android APK:
-flutter build apk#### Android App Bundle:ash
-flutter build appbundle#### iOS:
+```bash
+flutter build apk
+```
+
+#### Android App Bundle:
+```bash
+flutter build appbundle
+```
+
+#### iOS:
+```bash
 flutter build ios
+```
+
 ## Running Tests
 
-The project includes a basic test structure. To run the tests:
+The project includes comprehensive tests covering both unit and widget tests. To run all tests:
 
-flutter test**Note**: The current test file (`test/widget_test.dart`) contains placeholder code. Comprehensive tests for the application features should be implemented as part of future development.
+```bash
+flutter test
+```
+
+The test suite includes:
+- **2 Unit Tests** (`test/habit_test.dart`): Testing Habit model creation and Firestore conversion
+- **2 Widget Tests** (`test/widget_test.dart`): Testing WelcomeScreen UI components and interactions
 
 To run tests with coverage:
-flutter test --coverage## Project Structure
+```bash
+flutter test --coverage
+```
+
+All tests pass successfully and verify core functionality of the application.
+
+## Project Structure
+
+```
+lib/
+├── main.dart                    # App entry point with Firebase initialization
+├── firebase_options.dart        # Firebase configuration
+├── models/                      # Data models
+│   ├── habit.dart              # Habit model
+│   └── reminder.dart           # Reminder model
+├── providers/                   # State management (Provider pattern)
+│   ├── auth_provider.dart      # Authentication state
+│   ├── habit_provider.dart     # Habit management state
+│   ├── reminders_provider.dart # Reminders state
+│   └── settings_provider.dart  # User settings state
+├── screens/                     # UI screens
+│   ├── welcome_screen.dart
+│   ├── login_screen.dart
+│   ├── signup_screen.dart
+│   ├── registration_screen.dart
+│   ├── personalization_screen.dart
+│   ├── home_screen.dart
+│   ├── add_new_habit_screen.dart
+│   ├── habit_detail_screen.dart
+│   ├── habit_edit_screen.dart
+│   ├── habit_selection_screen.dart
+│   ├── statistics_screen.dart
+│   ├── streak_calendar_screen.dart
+│   ├── reminders_screen.dart
+│   ├── profile_screen.dart
+│   └── settings_screen.dart
+└── services/                    # Business logic services
+    ├── auth_service.dart       # Firebase Authentication service
+    └── habit_service.dart      # Firestore Habit operations
+```
+
+## Firebase Services Used
+
+- **Firebase Authentication**: User registration and login
+- **Cloud Firestore**: Habit data storage and retrieval
+- **Firebase Options**: Multi-platform configuration
+
+## State Management
+
+The app uses the **Provider** pattern for state management with the following providers:
+
+- `AuthProvider`: Manages user authentication state
+- `HabitProvider`: Manages habit CRUD operations
+- `RemindersProvider`: Manages reminder scheduling and notifications
+- `SettingsProvider`: Manages user preferences and theme settings
+
+## Known Limitations & Bugs
+
+1. **Reminder Notifications**: While reminders are implemented, native push notifications may require additional configuration for background notifications on iOS and Android.
+
+2. **Offline Support**: The app requires an active internet connection to sync data with Firebase. Offline support with local caching could be improved.
+
+3. **Error Handling**: Some edge cases in error handling could be enhanced for better user experience.
+
+4. **Firebase Configuration**: If deploying to a new environment, Firebase configuration files need to be updated manually.
+
+5. **iOS Signing**: Release builds for iOS require proper code signing configuration in Xcode.
+
+6. **Web Platform**: Full feature parity on web platform may require additional testing and adjustments.
+
+## Contributing
+
+This is a course project. For issues or improvements, please contact the project maintainers.
+
+## License
+
+This project is created for educational purposes as part of CS 310 course.
+
+## Version
+
+Current Version: 1.0.0+1
+
+## Contact
+
+For questions or support, please refer to the course instructors or project documentation.
