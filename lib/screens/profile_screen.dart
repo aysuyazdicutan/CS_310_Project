@@ -132,16 +132,52 @@ class ProfileScreen extends StatelessWidget {
                     // Logout Button
                     GestureDetector(
                       onTap: () async {
-                        // Trigger sign out via AuthProvider
-                        final auth = context.read<AuthProvider>();
-                        final success = await auth.signOut();
+                        final confirmed = await showDialog<bool>(
+                          context: context,
+                          builder: (BuildContext dialogContext) {
+                            return AlertDialog(
+                              title: const Text('Logout'),
+                              content: const Text(
+                                'Are you sure you want to logout?',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Color(0xFF2C3E50),
+                                ),
+                              ),
+                              actions: [
+                                TextButton(
+                                  onPressed: () => Navigator.of(dialogContext).pop(false),
+                                  child: const Text(
+                                    'Cancel',
+                                    style: TextStyle(
+                                      color: Color(0xFF2C3E50),
+                                    ),
+                                  ),
+                                ),
+                                TextButton(
+                                  onPressed: () => Navigator.of(dialogContext).pop(true),
+                                  style: TextButton.styleFrom(
+                                    foregroundColor: Colors.red,
+                                  ),
+                                  child: const Text('Logout'),
+                                ),
+                              ],
+                            );
+                          },
+                        );
 
-                        if (success) {
-                          // Navigate to sign up page after logout
-                          Navigator.of(context).pushNamedAndRemoveUntil(
-                            '/signup',
-                            (route) => false,
-                          );
+                        if (confirmed == true) {
+                          // Trigger sign out via AuthProvider
+                          final auth = context.read<AuthProvider>();
+                          final success = await auth.signOut();
+
+                          if (success) {
+                            // Navigate to sign up page after logout
+                            Navigator.of(context).pushNamedAndRemoveUntil(
+                              '/signup',
+                              (route) => false,
+                            );
+                          }
                         }
                       },
                       child: Container(

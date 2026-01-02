@@ -218,24 +218,11 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Back button and title
+              // Title
               Padding(
                 padding: const EdgeInsets.all(20.0),
                 child: Column(
                   children: [
-                    Row(
-                      children: [
-                        GestureDetector(
-                          onTap: () => Navigator.pop(context),
-                          child: const Icon(
-                            Icons.arrow_back,
-                            color: Color(0xFF9B59B6),
-                            size: 28,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 16),
                     const Center(
                       child: Text(
                         'Streak Calendar',

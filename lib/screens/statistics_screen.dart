@@ -201,14 +201,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               padding: const EdgeInsets.all(20.0),
               child: Row(
                 children: [
-                  IconButton(
-                    icon: const Icon(
-                      Icons.arrow_back,
-                      color: Color(0xFF6B46C1),
-                      size: 28,
-                    ),
-                    onPressed: () => Navigator.pop(context),
-                  ),
                   const Expanded(
                     child: Text(
                       'Statistics',
@@ -221,7 +213,6 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 48), // Balance the back button
                 ],
               ),
             ),

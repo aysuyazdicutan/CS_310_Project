@@ -26,14 +26,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
               padding: const EdgeInsets.all(20.0),
               child: Row(
                 children: [
-                  IconButton(
-                    icon: Icon(
-                      Icons.arrow_back,
-                      color: theme.colorScheme.primary,
-                      size: 28,
-                    ),
-                    onPressed: () => Navigator.pop(context),
-                  ),
                   Expanded(
                     child: Text(
                       'Settings',
@@ -41,7 +33,6 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       style: theme.textTheme.headlineLarge,
                     ),
                   ),
-                  const SizedBox(width: 48), // Balance the back button
                 ],
               ),
             ),
