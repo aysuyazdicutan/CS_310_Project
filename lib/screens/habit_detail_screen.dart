@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import '../services/habit_service.dart';
 import '../models/habit.dart';
-import 'habit_edit_screen.dart';
 
 class HabitDetailScreen extends StatefulWidget {
   final String habitId;
@@ -17,6 +16,7 @@ class HabitDetailScreen extends StatefulWidget {
 
 class _HabitDetailScreenState extends State<HabitDetailScreen> {
   DateTime _currentDate = DateTime.now();
+  final HabitService _habitService = HabitService();
 
   String _getMonthYearString(DateTime date) {
     final months = [
@@ -121,7 +121,62 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
     return maxStreak;
   }
 
-  Widget _buildCalendarGrid(Map<int, bool> completionHistoryInt, String habitEmoji) {
+  Future<void> _onDayTap(int dayNumber, Habit habit) async {
+    final tappedDate = DateTime(_currentDate.year, _currentDate.month, dayNumber);
+    final today = DateTime.now();
+    final todayOnly = DateTime(today.year, today.month, today.day);
+    final tappedDateOnly = DateTime(tappedDate.year, tappedDate.month, tappedDate.day);
+    
+    // Check if tapped date is in the future
+    if (tappedDateOnly.isAfter(todayOnly)) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('You cannot mark future dates as completed'),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+      return;
+    }
+    
+    final dateKey = '${tappedDate.year}-${tappedDate.month.toString().padLeft(2, '0')}-${tappedDate.day.toString().padLeft(2, '0')}';
+    
+    final newCompletionHistory = Map<String, bool>.from(habit.completionHistory);
+    final wasCompleted = newCompletionHistory[dateKey] ?? false;
+    newCompletionHistory[dateKey] = !wasCompleted;
+
+    // Calculate new streak
+    final newStreak = _calculateStreak(newCompletionHistory);
+    final newBestStreak = _calculateBestStreak(newCompletionHistory);
+    final finalBestStreak = newBestStreak > habit.bestStreak ? newBestStreak : habit.bestStreak;
+
+    // Get today's date key to update isCompleted
+    final todayKey = '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
+    final isCompleted = newCompletionHistory[todayKey] ?? false;
+
+    // Update in Firestore - StreamBuilder will automatically update UI
+    try {
+      await _habitService.updateHabit(
+        habitId: widget.habitId,
+        isCompleted: isCompleted,
+        streak: newStreak,
+        bestStreak: finalBestStreak,
+        completionHistory: newCompletionHistory,
+      );
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error updating habit: $e'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    }
+  }
+
+  Widget _buildCalendarGrid(Map<int, bool> completionHistoryInt, String habitEmoji, Habit habit) {
     final firstDayOfMonth = DateTime(_currentDate.year, _currentDate.month, 1);
     final lastDayOfMonth = DateTime(_currentDate.year, _currentDate.month + 1, 0);
     final daysInMonth = lastDayOfMonth.day;
@@ -206,41 +261,44 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                            _currentDate.month == now.month && 
                            _currentDate.year == now.year;
             
-            return Container(
-              decoration: BoxDecoration(
-                border: Border.all(
-                  color: const Color(0xFF9B59B6),
-                  width: 1,
+            return GestureDetector(
+              onTap: () => _onDayTap(dayNumber, habit),
+              child: Container(
+                decoration: BoxDecoration(
+                  border: Border.all(
+                    color: const Color(0xFF9B59B6),
+                    width: 1,
+                  ),
+                  borderRadius: BorderRadius.circular(4),
+                  color: isToday ? const Color(0xFF9B59B6).withOpacity(0.1) : null,
                 ),
-                borderRadius: BorderRadius.circular(4),
-                color: isToday ? const Color(0xFF9B59B6).withOpacity(0.1) : null,
-              ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4),
-                    child: Text(
-                      '$dayNumber',
-                      style: TextStyle(
-                        fontSize: 12,
-                        color: isToday ? const Color(0xFF9B59B6) : const Color(0xFF2C3E50),
-                        fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-                        fontFamily: 'Roboto',
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4),
+                      child: Text(
+                        '$dayNumber',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: isToday ? const Color(0xFF9B59B6) : const Color(0xFF2C3E50),
+                          fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
+                          fontFamily: 'Roboto',
+                        ),
                       ),
                     ),
-                  ),
-                  Expanded(
-                    child: Center(
-                      child: isCompleted
-                          ? Text(
-                              habitEmoji,
-                              style: const TextStyle(fontSize: 20),
-                            )
-                          : const SizedBox(),
+                    Expanded(
+                      child: Center(
+                        child: isCompleted
+                            ? Text(
+                                habitEmoji,
+                                style: const TextStyle(fontSize: 20),
+                              )
+                            : const SizedBox(),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             );
           },
@@ -251,13 +309,11 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final habitService = HabitService();
-    
-    return FutureBuilder<Habit?>(
-      future: habitService.getHabit(widget.habitId),
+    return StreamBuilder<Habit?>(
+      stream: _habitService.getHabitStream(widget.habitId),
       builder: (context, snapshot) {
         // Loading state
-        if (snapshot.connectionState == ConnectionState.waiting) {
+        if (snapshot.connectionState == ConnectionState.waiting && !snapshot.hasData) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
@@ -540,7 +596,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: _buildCalendarGrid(completionHistoryInt, habit.emoji),
+                child: _buildCalendarGrid(completionHistoryInt, habit.emoji, habit),
               ),
             ),
             const SizedBox(height: 24),
@@ -623,46 +679,6 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                       ],
                     ),
                   ],
-                ),
-              ),
-            ),
-            const SizedBox(height: 24),
-            // Edit button
-            Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: Container(
-                width: double.infinity,
-                decoration: BoxDecoration(
-                  color: const Color(0xFF87CEEB),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: const Color(0xFF9B59B6),
-                    width: 1,
-                  ),
-                ),
-                child: TextButton(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => HabitEditScreen(
-                          habitId: widget.habitId,
-                          habitName: habit.name,
-                          habitEmoji: habit.emoji,
-                          completionHistory: completionHistoryInt,
-                        ),
-                      ),
-                    );
-                  },
-                  child: const Text(
-                    'Edit',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Color(0xFF2C3E50),
-                      fontFamily: 'Roboto',
-                    ),
-                  ),
                 ),
               ),
             ),
