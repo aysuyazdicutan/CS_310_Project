@@ -119,14 +119,6 @@ class _RemindersScreenState extends State<RemindersScreen> {
                   padding: const EdgeInsets.all(20.0),
                   child: Row(
                     children: [
-                      IconButton(
-                        icon: const Icon(
-                          Icons.arrow_back,
-                          color: Color(0xFF6B46C1),
-                          size: 28,
-                        ),
-                        onPressed: () => Navigator.pop(context),
-                      ),
                       const Expanded(
                         child: Text(
                           'Reminders',
@@ -139,7 +131,6 @@ class _RemindersScreenState extends State<RemindersScreen> {
                           ),
                         ),
                       ),
-                      const SizedBox(width: 48), // Balance the back button
                     ],
                   ),
                 ),
