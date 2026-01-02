@@ -51,6 +51,16 @@ class HabitService {
     }
   }
 
+  /// Read: Get a single habit by ID (real-time stream)
+  Stream<Habit?> getHabitStream(String habitId) {
+    return _habitDoc(habitId)
+        .snapshots()
+        .map((docSnapshot) {
+      if (!docSnapshot.exists) return null;
+      return Habit.fromFirestore(docSnapshot);
+    });
+  }
+
   /// Read: Get all habits for a specific user (real-time stream)
   Stream<List<Habit>> getHabitsStream(String userId) {
     return _habitsCollection()
