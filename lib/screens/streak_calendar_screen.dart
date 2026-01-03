@@ -354,7 +354,7 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
                 child: Container(
                   padding: const EdgeInsets.all(16),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.7),
+                    color: Colors.white.withAlpha(179),
                     borderRadius: BorderRadius.circular(8),
                   ),
                     child: Column(

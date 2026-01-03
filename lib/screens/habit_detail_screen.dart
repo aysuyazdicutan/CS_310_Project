@@ -270,7 +270,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                     width: 1,
                   ),
                   borderRadius: BorderRadius.circular(4),
-                  color: isToday ? const Color(0xFF9B59B6).withOpacity(0.1) : null,
+                  color: isToday ? const Color(0xFF9B59B6).withAlpha(26) : null,
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -485,7 +485,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                     padding: const EdgeInsets.all(16),
                     margin: const EdgeInsets.only(bottom: 8),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withAlpha(179),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -514,7 +514,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                     padding: const EdgeInsets.all(16),
                     margin: const EdgeInsets.only(bottom: 16),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.7),
+                      color: Colors.white.withAlpha(179),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
@@ -606,7 +606,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
               child: Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.7),
+                  color: Colors.white.withAlpha(179),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
