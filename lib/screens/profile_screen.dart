@@ -1,11 +1,16 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import '../providers/auth_provider.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final authProvider = context.watch<AuthProvider>();
+    final user = authProvider.user;
+    
+    final displayName = user?.displayName ?? user?.email ?? 'User';
     return Scaffold(
       backgroundColor: const Color(0xFFE6F2FA),
       body: SafeArea(
@@ -76,7 +81,7 @@ class ProfileScreen extends StatelessWidget {
                             ),
                             child: ClipOval(
                               child: Image.network(
-                                'https://i.pravatar.cc/150?img=12',
+                                'https://api.dicebear.com/7.x/avataaars/png?seed=profile',
                                 width: 100,
                                 height: 100,
                                 fit: BoxFit.cover,
@@ -109,9 +114,9 @@ class ProfileScreen extends StatelessWidget {
                           ),
                           const SizedBox(height: 16),
                           // Username
-                          const Text(
-                            'Username',
-                            style: TextStyle(
+                          Text(
+                            displayName,
+                            style: const TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.w600,
                               fontStyle: FontStyle.italic,
@@ -151,8 +156,23 @@ class ProfileScreen extends StatelessWidget {
                     const Spacer(),
                     // Logout Button
                     GestureDetector(
-                      onTap: () {
-                        SystemNavigator.pop();
+                      onTap: () async {
+                        final success = await authProvider.signOut();
+                        if (success && context.mounted) {
+                          Navigator.of(context).pushNamedAndRemoveUntil(
+                            '/login',
+                            (route) => false,
+                          );
+                        } else if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                authProvider.errorMessage ?? 'Failed to sign out',
+                              ),
+                              backgroundColor: Colors.red,
+                            ),
+                          );
+                        }
                       },
                       child: Container(
                         width: double.infinity,
@@ -206,7 +226,7 @@ class ProfileScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-                                    color: const Color(0xFFADD8E6).withAlpha(77),
+          color: const Color(0xFFADD8E6).withAlpha(77),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
             color: const Color(0xFF6B46C1).withAlpha(77),
