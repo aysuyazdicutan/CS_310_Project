@@ -54,10 +54,11 @@ class WelcomeScreen extends StatelessWidget {
                   border: Border.all(width: 3, color: textColor), // Çerçeve rengi dinamik
                   color: isDark ? Colors.white.withOpacity(0.1) : Colors.white.withOpacity(0.5),
                 ),
-                child: Icon(
-                  Icons.favorite_border_rounded,
-                  size: 80,
-                  color: iconColor, // İkon rengi dinamik
+                child: Image.asset(
+                  'assets/images/kalp-Photoroom.png',
+                  width: 120,
+                  height: 120,
+                  fit: BoxFit.contain,
                 ),
               ),
 
