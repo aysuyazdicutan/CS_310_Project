@@ -86,7 +86,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
     final isDark = settings.darkModeEnabled;
 
     final textColor = isDark ? Colors.white : const Color(0xFF2C3E50);
-    final secondaryTextColor = isDark ? Colors.white70 : const Color(0xFF2C3E50).withOpacity(0.7);
+    final secondaryTextColor = isDark ? Colors.white70 : const Color(0xFF2C3E50).withAlpha(179);
     final inputFillColor = isDark ? const Color(0xFF1E293B) : Colors.white; 
     final primaryColor = const Color(0xFF4A90E2);
 
@@ -129,7 +129,7 @@ class _SignUpScreenState extends State<SignUpScreen> {
                       padding: const EdgeInsets.all(12),
                       margin: const EdgeInsets.only(bottom: 20),
                       decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.1),
+                        color: Colors.red.withAlpha(26),
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: Colors.red.shade200),
                       ),

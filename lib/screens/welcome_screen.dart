@@ -51,7 +51,7 @@ class WelcomeScreen extends StatelessWidget {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: Colors.black.withOpacity(0.05),
+                      color: Colors.black.withAlpha(13),
                       blurRadius: 8,
                       offset: const Offset(0, 2),
                     ),
@@ -97,7 +97,7 @@ class WelcomeScreen extends StatelessWidget {
                       borderRadius: BorderRadius.circular(16),
                     ),
                     elevation: 8,
-                    shadowColor: const Color(0xFF9B59B6).withOpacity(0.5),
+                    shadowColor: const Color(0xFF9B59B6).withAlpha(128),
                   ),
                   child: const Text(
                     'Get Started',

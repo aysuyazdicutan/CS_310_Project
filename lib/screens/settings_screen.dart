@@ -56,12 +56,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             },
                             activeColor: Colors.white,
                             activeTrackColor: theme.colorScheme.primary,
-                            inactiveTrackColor: Colors.grey.withOpacity(0.4),
+                            inactiveTrackColor: Colors.grey.withAlpha(102),
                             thumbColor:
                                 MaterialStateProperty.resolveWith<Color>(
                               (states) => states.contains(MaterialState.selected)
                                   ? Colors.white
-                                  : theme.textTheme.titleLarge?.color?.withOpacity(0.6) ?? Colors.grey,
+                                  : theme.textTheme.titleLarge?.color?.withAlpha(153) ?? Colors.grey,
                             ),
                           ),
                         ],
@@ -93,8 +93,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             padding: const EdgeInsets.all(8),
                             decoration: BoxDecoration(
                               color: theme.brightness == Brightness.dark
-                                  ? Colors.white.withOpacity(0.08)
-                                  : const Color(0xFFADD8E6).withOpacity(0.3),
+                                  ? Colors.white.withAlpha(20)
+                                  : const Color(0xFFADD8E6).withAlpha(77),
                               shape: BoxShape.circle,
                             ),
                             child: Icon(
@@ -125,7 +125,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
       child: InkWell(
         borderRadius: borderRadius,
         onTap: onTap,
-        splashColor: theme.colorScheme.primary.withOpacity(0.1),
+        splashColor: theme.colorScheme.primary.withAlpha(26),
         child: Container(
           padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
           decoration: BoxDecoration(
@@ -134,8 +134,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
             boxShadow: [
               BoxShadow(
                 color: theme.brightness == Brightness.dark
-                    ? Colors.black.withOpacity(0.25)
-                    : Colors.black.withOpacity(0.05),
+                    ? Colors.black.withAlpha(64)
+                    : Colors.black.withAlpha(13),
                 blurRadius: 8,
                 offset: const Offset(0, 2),
               ),

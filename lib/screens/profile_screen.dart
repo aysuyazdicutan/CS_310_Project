@@ -1,20 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:provider/provider.dart';
-import '../providers/auth_provider.dart';
 
 class ProfileScreen extends StatelessWidget {
   const ProfileScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final authProvider = context.watch<AuthProvider>();
-    final userEmail = authProvider.user?.email ?? '';
-    final username = userEmail.contains('@') 
-        ? userEmail.split('@')[0] 
-        : userEmail;
-
     return Scaffold(
+      backgroundColor: const Color(0xFFE6F2FA),
       body: SafeArea(
         child: Column(
           children: [
@@ -61,7 +54,7 @@ class ProfileScreen extends StatelessWidget {
                         borderRadius: BorderRadius.circular(16),
                         boxShadow: [
                           BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
+                            color: Colors.black.withAlpha(13),
                             blurRadius: 8,
                             offset: const Offset(0, 2),
                           ),
@@ -75,23 +68,50 @@ class ProfileScreen extends StatelessWidget {
                             height: 100,
                             decoration: BoxDecoration(
                               shape: BoxShape.circle,
-                              color: const Color(0xFFADD8E6).withOpacity(0.3),
+                              color: const Color(0xFFADD8E6).withAlpha(77),
                               border: Border.all(
-                                color: const Color(0xFF4A90E2).withOpacity(0.3),
+                                color: const Color(0xFF4A90E2).withAlpha(77),
                                 width: 2,
                               ),
                             ),
-                            child: const Icon(
-                              Icons.person,
-                              size: 60,
-                              color: Color(0xFF6B46C1),
+                            child: ClipOval(
+                              child: Image.network(
+                                'https://i.pravatar.cc/150?img=12',
+                                width: 100,
+                                height: 100,
+                                fit: BoxFit.cover,
+                                loadingBuilder: (context, child, loadingProgress) {
+                                  if (loadingProgress == null) return child;
+                                  return Container(
+                                    color: const Color(0xFFADD8E6).withAlpha(77),
+                                    child: const Center(
+                                      child: CircularProgressIndicator(
+                                        color: Color(0xFF6B46C1),
+                                        strokeWidth: 3,
+                                      ),
+                                    ),
+                                  );
+                                },
+                                errorBuilder: (context, error, stackTrace) {
+                                  return Container(
+                                    color: const Color(0xFFADD8E6).withAlpha(77),
+                                    child: const Center(
+                                      child: Icon(
+                                        Icons.person,
+                                        size: 60,
+                                        color: Color(0xFF6B46C1),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
                           ),
                           const SizedBox(height: 16),
                           // Username
-                          Text(
-                            username,
-                            style: const TextStyle(
+                          const Text(
+                            'Username',
+                            style: TextStyle(
                               fontSize: 22,
                               fontWeight: FontWeight.w600,
                               fontStyle: FontStyle.italic,
@@ -131,54 +151,8 @@ class ProfileScreen extends StatelessWidget {
                     const Spacer(),
                     // Logout Button
                     GestureDetector(
-                      onTap: () async {
-                        final confirmed = await showDialog<bool>(
-                          context: context,
-                          builder: (BuildContext dialogContext) {
-                            return AlertDialog(
-                              title: const Text('Logout'),
-                              content: const Text(
-                                'Are you sure you want to logout?',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  color: Color(0xFF2C3E50),
-                                ),
-                              ),
-                              actions: [
-                                TextButton(
-                                  onPressed: () => Navigator.of(dialogContext).pop(false),
-                                  child: const Text(
-                                    'Cancel',
-                                    style: TextStyle(
-                                      color: Color(0xFF2C3E50),
-                                    ),
-                                  ),
-                                ),
-                                TextButton(
-                                  onPressed: () => Navigator.of(dialogContext).pop(true),
-                                  style: TextButton.styleFrom(
-                                    foregroundColor: Colors.red,
-                                  ),
-                                  child: const Text('Logout'),
-                                ),
-                              ],
-                            );
-                          },
-                        );
-
-                        if (confirmed == true) {
-                          // Trigger sign out via AuthProvider
-                          final auth = context.read<AuthProvider>();
-                          final success = await auth.signOut();
-
-                          if (success) {
-                            // Navigate to sign up page after logout
-                            Navigator.of(context).pushNamedAndRemoveUntil(
-                              '/signup',
-                              (route) => false,
-                            );
-                          }
-                        }
+                      onTap: () {
+                        SystemNavigator.pop();
                       },
                       child: Container(
                         width: double.infinity,
@@ -187,12 +161,12 @@ class ProfileScreen extends StatelessWidget {
                           color: const Color(0xFF40E0D0),
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: const Color(0xFF6B46C1).withOpacity(0.3),
+                            color: const Color(0xFF6B46C1).withAlpha(77),
                             width: 2,
                           ),
                           boxShadow: [
                             BoxShadow(
-                              color: Colors.black.withOpacity(0.05),
+                              color: Colors.black.withAlpha(13),
                               blurRadius: 8,
                               offset: const Offset(0, 2),
                             ),
@@ -232,10 +206,10 @@ class ProfileScreen extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         decoration: BoxDecoration(
-          color: const Color(0xFFADD8E6).withOpacity(0.3),
+                                    color: const Color(0xFFADD8E6).withAlpha(77),
           borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: const Color(0xFF6B46C1).withOpacity(0.3),
+            color: const Color(0xFF6B46C1).withAlpha(77),
             width: 1,
           ),
         ),
