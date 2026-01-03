@@ -39,8 +39,27 @@ class _AddNewHabitScreenState extends State<AddNewHabitScreen> {
       'daysPerWeek': _selectedDaysPerWeek ?? 7, // Default to 7 if not selected
     };
     
-    // Navigate back with the habit data
-    Navigator.pop(context, habitData);
+    // Show success dialog
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: const Text('Success'),
+          content: const Text('New habit created successfully!'),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // Close the dialog first
+                Navigator.of(dialogContext).pop();
+                // Then close the screen and return the habit data
+                Navigator.pop(context, habitData);
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
