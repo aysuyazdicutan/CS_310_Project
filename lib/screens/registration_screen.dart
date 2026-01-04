@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../constants/app_colors.dart';
+import '../constants/app_text_styles.dart';
+import '../constants/app_paddings.dart';
 
 class RegistrationScreen extends StatefulWidget {
   const RegistrationScreen({super.key});
@@ -27,32 +30,26 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24.0),
+          padding: AppPaddings.paddingAllXLarge,
           child: Form(
             key: _formKey,
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const SizedBox(height: 40),
+                const SizedBox(height: AppPaddings.spacingXXXLarge),
                 // Title with handwritten style
                 const Text(
                   'Create your account',
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 32,
-                    fontWeight: FontWeight.bold,
-                    fontStyle: FontStyle.italic,
-                    letterSpacing: 1.2,
-                    color: Color(0xFF2C3E50),
-                  ),
+                  style: AppTextStyles.registrationTitle,
                 ),
-                const SizedBox(height: 50),
+                const SizedBox(height: AppPaddings.spacingXXXXLarge),
                 // White rounded container
                 Container(
-                  padding: const EdgeInsets.all(24.0),
+                  padding: AppPaddings.paddingAllXLarge,
                   decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(16),
+                    color: AppColors.cardBackgroundLight,
+                    borderRadius: AppPaddings.borderRadiusLarge,
                     boxShadow: [
                       BoxShadow(
                         color: Colors.black.withAlpha(13),
@@ -67,13 +64,9 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       // Section title
                       const Text(
                         'Registration',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                          color: Color(0xFF2C3E50),
-                        ),
+                        style: AppTextStyles.titleLarge,
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: AppPaddings.spacingXLarge),
                       // Full Name field
                       TextFormField(
                         controller: _fullNameController,
@@ -81,33 +74,30 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           labelText: 'Full Name',
                           hintText: 'Enter your full name',
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: AppPaddings.borderRadiusMedium,
                             borderSide: const BorderSide(
-                              color: Color(0xFFE0E0E0),
+                              color: AppColors.borderLight,
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: AppPaddings.borderRadiusMedium,
                             borderSide: const BorderSide(
-                              color: Color(0xFFE0E0E0),
+                              color: AppColors.borderLight,
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: AppPaddings.borderRadiusMedium,
                             borderSide: const BorderSide(
-                              color: Color(0xFF4A90E2),
+                              color: AppColors.primary,
                               width: 2,
                             ),
                           ),
                           filled: true,
-                          fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 16,
-                          ),
+                          fillColor: AppColors.cardBackgroundLight,
+                          contentPadding: AppPaddings.inputPadding,
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: AppPaddings.spacingLarge),
                       // Email field
                       TextFormField(
                         controller: _emailController,
@@ -116,33 +106,30 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           labelText: 'Email Address',
                           hintText: 'Enter your email',
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: AppPaddings.borderRadiusMedium,
                             borderSide: const BorderSide(
-                              color: Color(0xFFE0E0E0),
+                              color: AppColors.borderLight,
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: AppPaddings.borderRadiusMedium,
                             borderSide: const BorderSide(
-                              color: Color(0xFFE0E0E0),
+                              color: AppColors.borderLight,
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: AppPaddings.borderRadiusMedium,
                             borderSide: const BorderSide(
-                              color: Color(0xFF4A90E2),
+                              color: AppColors.primary,
                               width: 2,
                             ),
                           ),
                           filled: true,
-                          fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 16,
-                          ),
+                          fillColor: AppColors.cardBackgroundLight,
+                          contentPadding: AppPaddings.inputPadding,
                         ),
                       ),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: AppPaddings.spacingLarge),
                       // Password field
                       TextFormField(
                         controller: _passwordController,
@@ -151,42 +138,36 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                           labelText: 'Password',
                           hintText: 'Enter your password',
                           border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: AppPaddings.borderRadiusMedium,
                             borderSide: const BorderSide(
-                              color: Color(0xFFE0E0E0),
+                              color: AppColors.borderLight,
                             ),
                           ),
                           enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: AppPaddings.borderRadiusMedium,
                             borderSide: const BorderSide(
-                              color: Color(0xFFE0E0E0),
+                              color: AppColors.borderLight,
                             ),
                           ),
                           focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
+                            borderRadius: AppPaddings.borderRadiusMedium,
                             borderSide: const BorderSide(
-                              color: Color(0xFF4A90E2),
+                              color: AppColors.primary,
                               width: 2,
                             ),
                           ),
                           filled: true,
-                          fillColor: Colors.white,
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 16,
-                          ),
+                          fillColor: AppColors.cardBackgroundLight,
+                          contentPadding: AppPaddings.inputPadding,
                         ),
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: AppPaddings.spacingXLarge),
                       // Terms and Privacy Policy text
                       const Text(
                         'I agree to the Terms and Privacy Policy',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Color(0xFF2C3E50),
-                        ),
+                        style: AppTextStyles.labelMedium,
                       ),
-                      const SizedBox(height: 12),
+                      const SizedBox(height: AppPaddings.spacingSmall),
                       // Yes checkbox
                       Row(
                         children: [
@@ -197,14 +178,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                 _agreedToTerms = value ?? false;
                               });
                             },
-                            activeColor: const Color(0xFF4A90E2),
+                            activeColor: AppColors.primary,
                           ),
                           const Text(
                             'Yes',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Color(0xFF2C3E50),
-                            ),
+                            style: AppTextStyles.labelMedium,
                           ),
                         ],
                       ),
@@ -218,21 +196,18 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                                 _agreedToTerms = !(value ?? false);
                               });
                             },
-                            activeColor: const Color(0xFF4A90E2),
+                            activeColor: AppColors.primary,
                           ),
                           const Text(
                             'No',
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: Color(0xFF2C3E50),
-                            ),
+                            style: AppTextStyles.labelMedium,
                           ),
                         ],
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 32),
+                const SizedBox(height: AppPaddings.spacingXXLarge),
                 // Register Now button
                 ElevatedButton(
                   onPressed: () {
@@ -247,23 +222,20 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     }
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4A90E2),
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    padding: AppPaddings.buttonPaddingVerticalLarge,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: AppPaddings.borderRadiusMedium,
                     ),
                     elevation: 2,
                   ),
                   child: const Text(
                     'Register Now',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
+                    style: AppTextStyles.buttonXLarge,
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: AppPaddings.spacingLarge),
               ],
             ),
           ),

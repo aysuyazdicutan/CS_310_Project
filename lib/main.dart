@@ -6,6 +6,8 @@ import 'providers/auth_provider.dart';
 import 'providers/habit_provider.dart';
 import 'providers/settings_provider.dart';
 import 'providers/reminders_provider.dart';
+import 'constants/app_colors.dart';
+import 'constants/app_text_styles.dart';
 // Your Imports
 import 'screens/profile_screen.dart';
 import 'screens/settings_screen.dart';
@@ -57,62 +59,32 @@ class PerpetuaApp extends StatelessWidget {
         primarySwatch: Colors.blue,
         fontFamily: 'Roboto',
             brightness: Brightness.light,
-            scaffoldBackgroundColor: const Color(0xFFE6F2FA),
-            cardColor: Colors.white,
+            scaffoldBackgroundColor: AppColors.scaffoldBackgroundLight,
+            cardColor: AppColors.cardBackgroundLight,
             textTheme: const TextTheme(
-              headlineLarge: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w600,
-                fontStyle: FontStyle.italic,
-                color: Color(0xFF2C3E50),
-              ),
-              titleLarge: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                fontStyle: FontStyle.italic,
-                color: Color(0xFF2C3E50),
-              ),
-              bodyLarge: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                fontStyle: FontStyle.italic,
-                color: Color(0xFF2C3E50),
-              ),
+              headlineLarge: AppTextStyles.headlineLarge,
+              titleLarge: AppTextStyles.titleMedium,
+              bodyLarge: AppTextStyles.bodyLarge,
             ),
             colorScheme: const ColorScheme.light(
-              primary: Color(0xFF4A90E2),
-              secondary: Color(0xFF4A90E2),
+              primary: AppColors.primary,
+              secondary: AppColors.primary,
             ),
           ),
           darkTheme: ThemeData(
             primarySwatch: Colors.blue,
             fontFamily: 'Roboto',
             brightness: Brightness.dark,
-            scaffoldBackgroundColor: const Color(0xFF0F172A),
-            cardColor: const Color(0xFF1E293B),
+            scaffoldBackgroundColor: AppColors.scaffoldBackgroundDark,
+            cardColor: AppColors.cardBackgroundDark,
             textTheme: const TextTheme(
-              headlineLarge: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w600,
-                fontStyle: FontStyle.italic,
-                color: Colors.white,
-              ),
-              titleLarge: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.w600,
-                fontStyle: FontStyle.italic,
-                color: Colors.white,
-              ),
-              bodyLarge: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w500,
-                fontStyle: FontStyle.italic,
-                color: Colors.white,
-              ),
+              headlineLarge: AppTextStyles.headlineLargeDark,
+              titleLarge: AppTextStyles.titleMediumDark,
+              bodyLarge: AppTextStyles.bodyLargeDark,
             ),
             colorScheme: const ColorScheme.dark(
-              primary: Color(0xFF38BDF8),
-              secondary: Color(0xFF38BDF8),
+              primary: AppColors.primaryDark,
+              secondary: AppColors.primaryDark,
             ),
           ),
           themeMode: settingsProvider.darkModeEnabled 
