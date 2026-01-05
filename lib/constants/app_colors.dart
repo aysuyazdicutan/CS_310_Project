@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 /// Centralized color definitions for the entire application.
 /// Use these constants instead of hardcoding color values.
 class AppColors {
+  // Primary swatch
+  static const MaterialColor primarySwatch = Colors.blue;
+  
   // Primary colors
   static const Color primary = Color(0xFF4A90E2);
   static const Color primaryDark = Color(0xFF38BDF8);
@@ -32,6 +35,7 @@ class AppColors {
   // Private constructor to prevent instantiation
   AppColors._();
 }
+
 
 
 

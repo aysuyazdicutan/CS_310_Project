@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../providers/settings_provider.dart';
+import '../constants/app_colors.dart';
+import '../constants/app_text_styles.dart';
+import '../constants/app_paddings.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -8,28 +11,30 @@ class WelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = context.watch<SettingsProvider>().darkModeEnabled;
-    final textColor = isDark ? Colors.white : const Color(0xFF2C3E50);
+    final textColor = isDark ? AppColors.textPrimaryDark : AppColors.textPrimary;
     final theme = Theme.of(context);
 
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppPaddings.paddingXLarge,
+            vertical: AppPaddings.spacingXXXLarge,
+          ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(height: 40),
+              SizedBox(height: AppPaddings.spacingXXXLarge),
               // Top Text
               Text(
                 'Welcome to',
                 textAlign: TextAlign.center,
-                style: TextStyle(
+                style: AppTextStyles.titleLarge.copyWith(
                   fontSize: 24,
-                  fontWeight: FontWeight.w600,
                   color: textColor,
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: AppPaddings.paddingXSmall),
               // Logo Text
               Text(
                 'PERPETUA',
@@ -41,19 +46,19 @@ class WelcomeScreen extends StatelessWidget {
                   letterSpacing: 2,
                 ),
               ),
-              const SizedBox(height: 40),
+              SizedBox(height: AppPaddings.spacingXXXLarge),
               
               // Image Container
               Container(
-                padding: const EdgeInsets.all(20),
+                padding: AppPaddings.paddingAllLarge,
                 decoration: BoxDecoration(
                   color: theme.cardColor,
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withAlpha(13),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
+                      blurRadius: AppPaddings.shadowBlurMedium,
+                      offset: AppPaddings.shadowOffsetSmall,
                     ),
                   ],
                 ),
@@ -65,22 +70,21 @@ class WelcomeScreen extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 40),
+              SizedBox(height: AppPaddings.spacingXXXLarge),
               // Slogan
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                padding: EdgeInsets.symmetric(horizontal: AppPaddings.paddingLarge),
                 child: Text(
                   "Build positive habits and keep your streak alive – don't break the chain!",
                   textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 16,
+                  style: AppTextStyles.bodyLarge.copyWith(
                     fontWeight: FontWeight.w500,
                     color: textColor,
                     height: 1.4,
                   ),
                 ),
               ),
-              const SizedBox(height: 60),
+              SizedBox(height: AppPaddings.spacingXXXXLarge),
               
               // Get Started Button
               SizedBox(
@@ -90,25 +94,24 @@ class WelcomeScreen extends StatelessWidget {
                     Navigator.pushReplacementNamed(context, '/login');
                   },
                   style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF4A90E2),
+                    backgroundColor: AppColors.primary,
                     foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    padding: AppPaddings.buttonPaddingVerticalLarge,
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: AppPaddings.borderRadiusLarge,
                     ),
                     elevation: 8,
-                    shadowColor: const Color(0xFF9B59B6).withAlpha(128),
+                    shadowColor: AppColors.primaryPurple.withAlpha(128),
                   ),
-                  child: const Text(
+                  child: Text(
                     'Get Started',
-                    style: TextStyle(
-                      fontSize: 18,
+                    style: AppTextStyles.buttonXLarge.copyWith(
                       fontWeight: FontWeight.bold,
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 40),
+              SizedBox(height: AppPaddings.spacingXXXLarge),
             ],
           ),
         ),

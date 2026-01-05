@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../services/habit_service.dart';
 import '../providers/auth_provider.dart';
 import '../models/habit.dart';
-import 'habit_selection_screen.dart';
+import '../constants/app_colors.dart';
 
 class StreakCalendarScreen extends StatefulWidget {
   const StreakCalendarScreen({super.key});
@@ -324,31 +324,41 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
                         },
                       ),
                       const SizedBox(height: 4),
-                      // Calendar days
-                      GridView.builder(
-                        shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
-                        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 7,
-                          mainAxisSpacing: 4,
-                          crossAxisSpacing: 4,
-                          childAspectRatio: 1,
-                        ),
+                      // Calendar days - AnimatedSwitcher ile smooth güncelleme
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 300),
+                        transitionBuilder: (Widget child, Animation<double> animation) {
+                          return FadeTransition(
+                            opacity: animation,
+                            child: child,
+                          );
+                        },
+                        child: GridView.builder(
+                          key: ValueKey(_selectedHabitIds?.toString() ?? 'all'),
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                            crossAxisCount: 7,
+                            mainAxisSpacing: 4,
+                            crossAxisSpacing: 4,
+                            childAspectRatio: 1,
+                          ),
                           itemCount: _buildCalendarDays(habitsMap).length,
                           itemBuilder: (context, index) {
                             final days = _buildCalendarDays(habitsMap);
-                          if (index < days.length) {
-                            return days[index];
-                          }
-                          return const SizedBox();
-                        },
+                            if (index < days.length) {
+                              return days[index];
+                            }
+                            return const SizedBox();
+                          },
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
               const SizedBox(height: 24),
-              // Legend
+              // Legend - Tıklanabilir habit listesi
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 20.0),
                 child: Container(
@@ -357,82 +367,94 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
                     color: Colors.white.withAlpha(179),
                     borderRadius: BorderRadius.circular(8),
                   ),
-                    child: Column(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    children: habits
-                        .where((habit) {
-                          // null = show all, empty set = show none, populated set = show selected only
-                          return _selectedHabitIds == null || _selectedHabitIds!.contains(habit.id);
-                        })
-                        .map((habit) {
-                      return Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Row(
-                          children: [
-                            Text(
-                              habit.emoji,
-                              style: const TextStyle(fontSize: 20),
-                            ),
-                            const SizedBox(width: 12),
-                            Text(
-                              habit.name,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                color: Color(0xFF2C3E50),
-                                fontFamily: 'Roboto',
-                              ),
-                            ),
-                          ],
+                    children: [
+                      const Text(
+                        'Tap to show/hide habits',
+                        style: TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF2C3E50),
+                          fontFamily: 'Roboto',
                         ),
-                      );
-                    }).toList(),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              // Edit button
-              Padding(
-                padding: const EdgeInsets.all(20.0),
-                child: Container(
-                  width: double.infinity,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF87CEEB),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: const Color(0xFF9B59B6),
-                      width: 1,
-                    ),
-                  ),
-                  child: TextButton(
-                    onPressed: () async {
-                      // If _selectedHabitIds is null (initial state), pass all habit IDs
-                      final initialSelection = _selectedHabitIds ?? 
-                          habits.map((h) => h.id).toSet();
-                      
-                      final result = await Navigator.push<Set<String>>(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => HabitSelectionScreen(
-                            allHabits: habitsMap,
-                            selectedHabitIds: initialSelection,
-                          ),
-                        ),
-                      );
-                      if (result != null) {
-                        setState(() {
-                          _selectedHabitIds = result;
-                        });
-                      }
-                    },
-                    child: const Text(
-                      'Edit',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFF2C3E50),
-                        fontFamily: 'Roboto',
                       ),
-                    ),
+                      const SizedBox(height: 12),
+                      ...habits.map((habit) {
+                        final isVisible = _selectedHabitIds == null || _selectedHabitIds!.contains(habit.id);
+                        
+                        return GestureDetector(
+                          onTap: () {
+                            setState(() {
+                              if (_selectedHabitIds == null) {
+                                // İlk tıklamada, tüm habit'leri seçili yap ama tıklananı kaldır
+                                _selectedHabitIds = habits.map((h) => h.id).toSet()..remove(habit.id);
+                              } else if (_selectedHabitIds!.contains(habit.id)) {
+                                // Eğer seçiliyse, kaldır
+                                _selectedHabitIds!.remove(habit.id);
+                                // Eğer hiç habit kalmadıysa, null yap (hepsini göster)
+                                if (_selectedHabitIds!.isEmpty) {
+                                  _selectedHabitIds = null;
+                                }
+                              } else {
+                                // Eğer seçili değilse, ekle
+                                _selectedHabitIds!.add(habit.id);
+                              }
+                            });
+                          },
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            curve: Curves.easeInOut,
+                            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 8),
+                            margin: const EdgeInsets.only(bottom: 8),
+                            decoration: BoxDecoration(
+                              color: isVisible ? Colors.transparent : Colors.grey[100],
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                // Checkmark indicator
+                                AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 200),
+                                  child: Icon(
+                                    isVisible ? Icons.check_circle : Icons.radio_button_unchecked,
+                                    key: ValueKey(isVisible),
+                                    color: isVisible ? AppColors.primary : Colors.grey,
+                                    size: 20,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                AnimatedOpacity(
+                                  duration: const Duration(milliseconds: 200),
+                                  opacity: isVisible ? 1.0 : 0.4,
+                                  child: Text(
+                                    habit.emoji,
+                                    style: const TextStyle(
+                                      fontSize: 20,
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(width: 12),
+                                Expanded(
+                                  child: AnimatedOpacity(
+                                    duration: const Duration(milliseconds: 200),
+                                    opacity: isVisible ? 1.0 : 0.4,
+                                    child: Text(
+                                      habit.name,
+                                      style: const TextStyle(
+                                        fontSize: 14,
+                                        color: Color(0xFF2C3E50),
+                                        fontFamily: 'Roboto',
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      }).toList(),
+                    ],
                   ),
                 ),
               ),

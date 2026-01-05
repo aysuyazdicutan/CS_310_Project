@@ -29,6 +29,21 @@ class AppPaddings {
   static const double radiusMedium = 12.0;
   static const double radiusLarge = 16.0;
   
+  // Border widths
+  static const double borderWidthThin = 1.0;
+  static const double borderWidthMedium = 2.0;
+  static const double borderWidthThick = 3.0;
+  
+  // Shadow blur radius
+  static const double shadowBlurSmall = 4.0;
+  static const double shadowBlurMedium = 8.0;
+  static const double shadowBlurLarge = 10.0;
+  
+  // Shadow offsets
+  static const Offset shadowOffsetSmall = Offset(0, 2);
+  static const Offset shadowOffsetMedium = Offset(0, 4);
+  static const Offset shadowOffsetLarge = Offset(0, 6);
+  
   // Common EdgeInsets
   static const EdgeInsets paddingAllSmall = EdgeInsets.all(paddingSmall);
   static const EdgeInsets paddingAllMedium = EdgeInsets.all(paddingMedium);
@@ -57,6 +72,7 @@ class AppPaddings {
   // Private constructor to prevent instantiation
   AppPaddings._();
 }
+
 
 
 
