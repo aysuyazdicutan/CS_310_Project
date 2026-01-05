@@ -1,83 +1,54 @@
-# Perpetua - Habit Tracking App
 
-A comprehensive Flutter application for tracking daily habits with Firebase backend integration, providing users with a modern, intuitive interface to build and maintain healthy habits.
+# Perpetua – Habit Tracking App
+
+Perpetua is a comprehensive Flutter-based habit tracking application designed to help users build and maintain positive daily routines. With Firebase backend integration, the app offers real-time data synchronization, persistence across devices, and a modern, intuitive user interface.
+
+---
 
 ## Project Overview & Motivation
 
-Perpetua is a habit tracking application designed to help users build and maintain positive daily routines. The app provides a seamless experience for users to create habits, track their progress, maintain streaks, set reminders, and view detailed statistics. Built with Flutter and Firebase, Perpetua ensures data persistence and real-time synchronization across devices.
+Perpetua aims to support users in building consistent habits by combining visual progress tracking, reminders, streaks, and detailed statistics.
 
-**Key Motivations:**
-- Help users build consistent daily habits through visual tracking
-- Provide motivation through streak tracking and statistics
-- Enable users to set reminders for their habits
-- Offer a clean, modern UI with dark mode support
-- Ensure data persistence through Firebase backend
+### Key Motivations
+- Encourage consistency through daily habit tracking
+- Motivate users with streaks and statistical insights
+- Allow customizable reminders for habits
+- Provide a clean, modern UI with dark mode support
+- Ensure reliable data persistence via Firebase
 
-## Features
-
-### Authentication & User Management
-- User registration and login with Firebase Authentication
-- Welcome screen for first-time users
-- Profile management
-- Secure user sessions
-
-### Habit Management
-- Create, edit, and delete habits
-- Custom emoji selection for each habit
-- Toggle daily habit completion
-- Track completion history
-- View detailed habit information
-
-### Progress Tracking
-- **Streak Tracking**: Current streak and best streak tracking for each habit
-- **Statistics Screen**: Comprehensive statistics and insights
-- **Streak Calendar**: Visual calendar view of habit completion
-- **Completion History**: Track completion dates over time
-
-### Reminders
-- Set custom reminders for habits
-- Notification system with snooze and dismiss options
-- Automatic reminder checking
-
-### Settings & Personalization
-- Dark mode support
-- User preferences storage with SharedPreferences
-- Settings management screen
-
-### UI/UX
-- Modern, clean interface with soft baby-blue theme (#E6F2FA)
-- Dark mode support
-- Responsive design
-- Intuitive navigation with bottom navigation bar
-- Swipe gestures for habit deletion
+---
 
 ## Technology Stack
 
-- **Framework**: Flutter (SDK >=3.0.0)
-- **State Management**: Provider
-- **Backend**: Firebase (Firestore, Authentication)
-- **Local Storage**: SharedPreferences
-- **UI**: Material Design with Google Fonts
+- **Framework:** Flutter (SDK >= 3.0.0)
+- **State Management:** Provider
+- **Backend:** Firebase (Authentication, Cloud Firestore)
+- **Local Storage:** SharedPreferences
+- **UI:** Material Design with custom Roboto font (local assets)
+
+---
 
 ## Prerequisites
 
-Before you begin, ensure you have the following installed:
+Before running the project, ensure the following are installed:
 
-- **Flutter SDK**: Version 3.0.0 or higher
-- **Dart SDK**: Included with Flutter
-- **Android Studio** or **VS Code** with Flutter extensions
-- **Firebase Account**: Access to Firebase Console
-- **Xcode** (for iOS development on macOS)
-- **Android SDK** (for Android development)
+- Flutter SDK (>= 3.0.0)
+- Dart SDK (included with Flutter)
+- Android Studio or VS Code with Flutter extensions
+- Firebase account
+- Xcode (for iOS development on macOS)
+- Android SDK (for Android development)
+
+---
 
 ## Setup Instructions
 
 ### 1. Clone the Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/aysuyazdicutan/CS_310_Project.git
 cd CS_310_Project
-```
+````
 
 ### 2. Install Flutter Dependencies
 
@@ -85,109 +56,154 @@ cd CS_310_Project
 flutter pub get
 ```
 
+This installs required packages such as:
+
+* firebase_core, firebase_auth, cloud_firestore
+* provider
+* shared_preferences
+* google_fonts (note: the app uses local Roboto font assets)
+
+---
+
 ### 3. Firebase Configuration
 
-This project uses Firebase for authentication and data storage. Firebase is already configured for the project, but if you need to set it up for a new Firebase project:
+Firebase is already configured for this project.
 
-#### For Android:
-- The `google-services.json` file is already present in `android/app/`
-- If using a new Firebase project, download `google-services.json` from Firebase Console and replace the existing file
+**Android**
 
-#### For iOS:
-- The `GoogleService-Info.plist` file is already present in `ios/Runner/`
-- If using a new Firebase project, download `GoogleService-Info.plist` from Firebase Console and replace the existing file
+* google-services.json is located in android/app/
+* If using a new Firebase project, replace this file with your own
 
-#### For Web (if needed):
-- Firebase configuration is included in `lib/firebase_options.dart`
+**iOS**
 
-**Note**: The current Firebase configuration files are already set up. If you're deploying to a new environment, you'll need to:
-1. Create a new Firebase project at https://console.firebase.google.com
-2. Enable Authentication (Email/Password)
-3. Create a Firestore database
-4. Download the platform-specific configuration files
-5. Run `flutterfire configure` if needed to regenerate `firebase_options.dart`
+* GoogleService-Info.plist is located in ios/Runner/
+* Deployment target must be iOS 15.0+
+* Run before first build:
 
-### 4. Verify Flutter Installation
+```bash
+cd ios
+pod install
+cd ..
+```
+
+**Web**
+
+* Firebase configuration is included in lib/firebase_options.dart
+
+**Using a New Firebase Project**
+
+1. Create a Firebase project at [https://console.firebase.google.com](https://console.firebase.google.com)
+2. Enable Email/Password Authentication
+3. Create a Cloud Firestore database
+4. Download platform-specific config files
+5. Run:
+
+```bash
+flutterfire configure
+```
+
+---
+
+### 4. Custom Font Setup
+
+The project uses the Roboto font family from local assets.
+
+Included fonts (assets/fonts/):
+
+* Roboto-Light.ttf (300)
+* Roboto-Regular.ttf (400)
+* Roboto-Medium.ttf (500)
+* Roboto-Bold.ttf (700)
+
+Fonts are already configured in pubspec.yaml.
+
+If missing, download them from:
+[https://fonts.google.com/specimen/Roboto](https://fonts.google.com/specimen/Roboto)
+
+---
+
+### 5. Verify Flutter Installation
 
 ```bash
 flutter doctor
 ```
 
-Ensure all required components are installed and properly configured.
+Ensure all components are correctly configured.
 
-### 5. Run the Application
+---
 
-#### For Android:
+### 6. Run the Application
+
+**Android**
+
 ```bash
 flutter run
 ```
 
 Or specify a device:
+
 ```bash
 flutter run -d <device-id>
 ```
 
-#### For iOS (macOS only):
+**iOS (macOS only)**
+
 ```bash
+cd ios
+pod install
+cd ..
 flutter run -d ios
 ```
 
-#### For Web:
+**Web**
+
 ```bash
 flutter run -d chrome
 ```
 
-### 6. Build for Release
-
-#### Android APK:
-```bash
-flutter build apk
-```
-
-#### Android App Bundle:
-```bash
-flutter build appbundle
-```
-
-#### iOS:
-```bash
-flutter build ios
-```
+---
 
 ## Running Tests
 
-The project includes comprehensive tests covering both unit and widget tests. To run all tests:
+Run all tests:
 
 ```bash
 flutter test
 ```
 
-The test suite includes:
-- **2 Unit Tests** (`test/habit_test.dart`): Testing Habit model creation and Firestore conversion
-- **2 Widget Tests** (`test/widget_test.dart`): Testing WelcomeScreen UI components and interactions
+Run tests with coverage:
 
-To run tests with coverage:
 ```bash
 flutter test --coverage
 ```
 
-All tests pass successfully and verify core functionality of the application.
+**Test Coverage**
+
+* Unit Tests: test/habit_test.dart (Habit model and Firestore conversion)
+* Widget Tests: test/widget_test.dart (WelcomeScreen UI and interactions)
+
+---
 
 ## Project Structure
 
 ```
 lib/
-├── main.dart                    # App entry point with Firebase initialization
-├── firebase_options.dart        # Firebase configuration
-├── models/                      # Data models
-│   ├── habit.dart              # Habit model
-│   └── reminder.dart           # Reminder model
-├── providers/                   # State management (Provider pattern)
-│   ├── auth_provider.dart      # Authentication state
-│   ├── habit_provider.dart     # Habit management state
-│   ├── reminders_provider.dart # Reminders state
-│   └── settings_provider.dart  # User settings state
-├── screens/                     # UI screens
+├── main.dart
+├── firebase_options.dart
+├── constants/
+│   ├── app_colors.dart
+│   ├── app_text_styles.dart
+│   ├── app_paddings.dart
+│   └── app_dimensions.dart
+├── models/
+│   ├── habit.dart
+│   └── reminder.dart
+├── providers/
+│   ├── auth_provider.dart
+│   ├── habit_provider.dart
+│   ├── reminders_provider.dart
+│   └── settings_provider.dart
+├── screens/
 │   ├── welcome_screen.dart
 │   ├── login_screen.dart
 │   ├── signup_screen.dart
@@ -201,52 +217,52 @@ lib/
 │   ├── reminders_screen.dart
 │   ├── profile_screen.dart
 │   └── settings_screen.dart
-└── services/                    # Business logic services
-    ├── auth_service.dart       # Firebase Authentication service
-    └── habit_service.dart      # Firestore Habit operations
+└── services/
+    ├── auth_service.dart
+    └── habit_service.dart
 ```
 
-## Firebase Services Used
-
-- **Firebase Authentication**: User registration and login
-- **Cloud Firestore**: Habit data storage and retrieval
-- **Firebase Options**: Multi-platform configuration
+---
 
 ## State Management
 
-The app uses the **Provider** pattern for state management with the following providers:
+The app uses the Provider pattern:
 
-- `AuthProvider`: Manages user authentication state
-- `HabitProvider`: Manages habit CRUD operations
-- `RemindersProvider`: Manages reminder scheduling and notifications
-- `SettingsProvider`: Manages user preferences and theme settings
+* AuthProvider – Authentication state
+* HabitProvider – Habit CRUD operations
+* RemindersProvider – Reminder scheduling and management
+* SettingsProvider – User preferences and theme settings
+
+---
+
+## Firebase Services Used
+
+* Firebase Authentication – User login and registration
+* Cloud Firestore – Habit data storage
+* Firebase Options – Multi-platform configuration
+
+---
 
 ## Known Limitations & Bugs
 
-1. **Reminder Notifications**: While reminders are implemented, native push notifications may require additional configuration for background notifications on iOS and Android.
+1. Reminder notifications may require additional native configuration for background execution.
+2. Offline support is limited; local caching can be improved.
+3. Some edge cases in error handling need refinement.
+4. Firebase configuration must be updated manually for new environments.
+5. iOS requires deployment target 15.0+.
+6. Web platform feature parity may need further testing.
+7. Some layouts may need optimization for very small or very large screens.
 
-2. **Offline Support**: The app requires an active internet connection to sync data with Firebase. Offline support with local caching could be improved.
-
-3. **Error Handling**: Some edge cases in error handling could be enhanced for better user experience.
-
-4. **Firebase Configuration**: If deploying to a new environment, Firebase configuration files need to be updated manually.
-
-5. **iOS Signing**: Release builds for iOS require proper code signing configuration in Xcode.
-
-6. **Web Platform**: Full feature parity on web platform may require additional testing and adjustments.
-
-## Contributing
-
-This is a course project. For issues or improvements, please contact the project maintainers.
+---
 
 ## License
 
-This project is created for educational purposes as part of CS 310 course.
+This project was created for educational purposes as part of the CS 310 – Mobile Application Development course.
+
+---
 
 ## Version
 
 Current Version: 1.0.0+1
 
-## Contact
 
-For questions or support, please refer to the course instructors or project documentation.
