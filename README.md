@@ -196,8 +196,6 @@ lib/
 │   ├── home_screen.dart
 │   ├── add_new_habit_screen.dart
 │   ├── habit_detail_screen.dart
-│   ├── habit_edit_screen.dart
-│   ├── habit_selection_screen.dart
 │   ├── statistics_screen.dart
 │   ├── streak_calendar_screen.dart
 │   ├── reminders_screen.dart
