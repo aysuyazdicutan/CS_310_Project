@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../constants/app_colors.dart';
+import '../constants/app_text_styles.dart';
+import '../constants/app_paddings.dart';
 
 class AddNewHabitScreen extends StatefulWidget {
   const AddNewHabitScreen({super.key});
@@ -69,27 +72,30 @@ class _AddNewHabitScreenState extends State<AddNewHabitScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF2C3E50)),
+          icon: Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+          padding: EdgeInsets.symmetric(
+            horizontal: AppPaddings.paddingXLarge,
+            vertical: AppPaddings.paddingLarge,
+          ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               // White rounded card
               Container(
-                padding: const EdgeInsets.all(24),
+                padding: AppPaddings.paddingAllXLarge,
                 decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(20),
+                  color: AppColors.cardBackgroundLight,
+                  borderRadius: BorderRadius.circular(AppPaddings.paddingLarge),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withAlpha(26),
-                      blurRadius: 10,
-                      offset: const Offset(0, 4),
+                      blurRadius: AppPaddings.shadowBlurLarge,
+                      offset: AppPaddings.shadowOffsetMedium,
                     ),
                   ],
                 ),
@@ -97,46 +103,37 @@ class _AddNewHabitScreenState extends State<AddNewHabitScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     // Title
-                    const Text(
+                    Text(
                       'Add New Habit',
-                      style: TextStyle(
-                        fontSize: 28,
+                      style: AppTextStyles.headlineLarge.copyWith(
                         fontWeight: FontWeight.bold,
-                        color: Color(0xFF2C3E50),
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: AppPaddings.spacingXXLarge),
                     // Habit Name text field
                     TextField(
                       controller: _habitNameController,
                       decoration: InputDecoration(
                         labelText: 'Habit Name',
-                        labelStyle: const TextStyle(
-                          color: Color(0xFF2C3E50),
+                        labelStyle: TextStyle(
+                          color: AppColors.textPrimary,
                         ),
                         filled: true,
                         fillColor: const Color(0xFFF5F5F5),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: AppPaddings.borderRadiusMedium,
                           borderSide: BorderSide.none,
                         ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
-                        ),
+                        contentPadding: AppPaddings.inputPadding,
                       ),
                     ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: AppPaddings.spacingXXLarge),
                     // "How many days a week will you do it?" section
-                    const Text(
+                    Text(
                       'How many days a week will you do it?',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF2C3E50),
-                      ),
+                      style: AppTextStyles.bodyMedium,
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: AppPaddings.paddingMedium),
                     // 7 selectable boxes labeled 1-7
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -154,25 +151,24 @@ class _AddNewHabitScreenState extends State<AddNewHabitScreen> {
                             height: 45,
                             decoration: BoxDecoration(
                               color: isSelected
-                                  ? const Color(0xFF4A90E2)
-                                  : Colors.white,
-                              borderRadius: BorderRadius.circular(12),
+                                  ? AppColors.primary
+                                  : AppColors.cardBackgroundLight,
+                              borderRadius: AppPaddings.borderRadiusMedium,
                               border: Border.all(
                                 color: isSelected
-                                    ? const Color(0xFF4A90E2)
+                                    ? AppColors.primary
                                     : Colors.grey[300]!,
-                                width: 2,
+                                width: AppPaddings.borderWidthMedium,
                               ),
                             ),
                             child: Center(
                               child: Text(
                                 '$dayNumber',
-                                style: TextStyle(
-                                  fontSize: 18,
+                                style: AppTextStyles.buttonXLarge.copyWith(
                                   fontWeight: FontWeight.bold,
                                   color: isSelected
                                       ? Colors.white
-                                      : const Color(0xFF2C3E50),
+                                      : AppColors.textPrimary,
                                 ),
                               ),
                             ),
@@ -180,53 +176,49 @@ class _AddNewHabitScreenState extends State<AddNewHabitScreen> {
                         );
                       }),
                     ),
-                    const SizedBox(height: 32),
+                    SizedBox(height: AppPaddings.spacingXXLarge),
                     // Text field for choosing an emoji
                     TextField(
                       controller: _emojiController,
                       decoration: InputDecoration(
                         labelText: 'Choose an emoji',
-                        labelStyle: const TextStyle(
-                          color: Color(0xFF2C3E50),
+                        labelStyle: TextStyle(
+                          color: AppColors.textPrimary,
                         ),
                         filled: true,
                         fillColor: const Color(0xFFF5F5F5),
                         border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: AppPaddings.borderRadiusMedium,
                           borderSide: BorderSide.none,
                         ),
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 16,
-                        ),
+                        contentPadding: AppPaddings.inputPadding,
                         hintText: 'e.g., 💪',
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 32),
+              SizedBox(height: AppPaddings.spacingXXLarge),
               // Large rounded "Add" button
               ElevatedButton(
                 onPressed: _handleAdd,
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF4A90E2),
+                  backgroundColor: AppColors.primary,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(vertical: 18),
+                  padding: AppPaddings.buttonPaddingVerticalLarge,
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: AppPaddings.borderRadiusLarge,
                   ),
                   elevation: 4,
                 ),
-                child: const Text(
+                child: Text(
                   'Add',
-                  style: TextStyle(
-                    fontSize: 18,
+                  style: AppTextStyles.buttonXLarge.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: AppPaddings.paddingLarge),
             ],
           ),
         ),

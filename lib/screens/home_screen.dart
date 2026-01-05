@@ -7,6 +7,10 @@ import '../services/habit_service.dart';
 import '../providers/auth_provider.dart';
 import '../providers/reminders_provider.dart';
 import '../providers/habit_provider.dart';
+import '../constants/app_colors.dart';
+import '../constants/app_text_styles.dart';
+import '../constants/app_paddings.dart';
+import '../constants/app_dimensions.dart';
 import 'habit_detail_screen.dart';
 import 'streak_calendar_screen.dart';
 import 'reminders_screen.dart';
@@ -240,14 +244,14 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: Colors.transparent,
       builder: (context) {
         return Container(
-          decoration: const BoxDecoration(
-            color: Colors.white,
+          decoration: BoxDecoration(
+            color: AppColors.cardBackgroundLight,
             borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(24),
-              topRight: Radius.circular(24),
+              topLeft: Radius.circular(AppPaddings.paddingXLarge),
+              topRight: Radius.circular(AppPaddings.paddingXLarge),
             ),
           ),
-          padding: const EdgeInsets.all(24),
+          padding: AppPaddings.paddingAllXLarge,
           child: SafeArea(
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -255,34 +259,27 @@ class _HomeScreenState extends State<HomeScreen> {
                 Container(
                   width: 40,
                   height: 4,
-                  margin: const EdgeInsets.only(bottom: 16),
+                  margin: EdgeInsets.only(bottom: AppPaddings.paddingMedium),
                   decoration: BoxDecoration(
                     color: Colors.grey[300],
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(AppPaddings.radiusXSmall),
                   ),
                 ),
                 Text(
                   reminder.habitEmoji,
-                  style: const TextStyle(fontSize: 48),
+                  style: TextStyle(fontSize: AppDimensions.iconXLarge),
                 ),
-                const SizedBox(height: 16),
+                SizedBox(height: AppPaddings.paddingMedium),
                 Text(
                   'Time for ${reminder.habitTitle}',
-                  style: const TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                    color: Color(0xFF2C3E50),
-                  ),
+                  style: AppTextStyles.titleLarge,
                 ),
-                const SizedBox(height: 8),
+                SizedBox(height: AppPaddings.paddingXSmall),
                 Text(
                   timeString,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    color: Color(0xFF2C3E50),
-                  ),
+                  style: AppTextStyles.bodyLarge,
                 ),
-                const SizedBox(height: 24),
+                SizedBox(height: AppPaddings.paddingXLarge),
                 // Mark Done button
                 SizedBox(
                   width: double.infinity,
@@ -327,19 +324,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       }
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF6B46C1),
+                      backgroundColor: AppColors.buttonPrimary,
                       foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      padding: AppPaddings.buttonPaddingVertical,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: AppPaddings.borderRadiusMedium,
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Mark Done',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: AppTextStyles.buttonLarge,
                     ),
                   ),
                 ),
@@ -355,19 +349,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       }
                     },
                     style: OutlinedButton.styleFrom(
-                      foregroundColor: const Color(0xFF6B46C1),
-                      side: const BorderSide(color: Color(0xFF6B46C1)),
-                      padding: const EdgeInsets.symmetric(vertical: 16),
+                      foregroundColor: AppColors.buttonPrimary,
+                      side: BorderSide(color: AppColors.buttonPrimary),
+                      padding: AppPaddings.buttonPaddingVertical,
                       shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                        borderRadius: AppPaddings.borderRadiusMedium,
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       'Snooze 10 min',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: AppTextStyles.buttonLarge,
                     ),
                   ),
                 ),
@@ -382,12 +373,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         Navigator.pop(context);
                       }
                     },
-                    child: const Text(
+                    child: Text(
                       'Dismiss',
-                      style: TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF2C3E50),
+                      style: AppTextStyles.buttonLarge.copyWith(
+                        color: AppColors.textPrimary,
                       ),
                     ),
                   ),
@@ -408,7 +397,10 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           // Top area
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppPaddings.paddingLarge,
+              vertical: AppPaddings.paddingMedium,
+            ),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
@@ -416,30 +408,24 @@ class _HomeScreenState extends State<HomeScreen> {
                   onTap: () {
                     Navigator.pushNamed(context, '/profile');
                   },
-                  child: const Text(
+                  child: Text(
                     'PROFILE',
-                    style: TextStyle(
-                      fontSize: 12,
+                    style: AppTextStyles.labelMedium.copyWith(
                       fontWeight: FontWeight.bold,
-                      color: Color(0xFF2C3E50),
                       letterSpacing: 1.2,
                     ),
                   ),
                 ),
                 Text(
                   _todayDate,
-                  style: const TextStyle(
-                    fontSize: 14,
+                  style: AppTextStyles.labelMedium.copyWith(
                     fontWeight: FontWeight.w600,
-                    color: Color(0xFF2C3E50),
                   ),
                 ),
-                const Text(
+                Text(
                   'Keep the chain alive',
-                  style: TextStyle(
-                    fontSize: 12,
+                  style: AppTextStyles.labelMedium.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: Color(0xFF2C3E50),
                     letterSpacing: 1.2,
                   ),
                 ),
@@ -455,61 +441,55 @@ class _HomeScreenState extends State<HomeScreen> {
               }
 
               return Container(
-                margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-                padding: const EdgeInsets.all(16),
+                margin: EdgeInsets.symmetric(
+                  horizontal: AppPaddings.paddingLarge,
+                  vertical: AppPaddings.paddingXSmall,
+                ),
+                padding: AppPaddings.paddingAllMedium,
                 decoration: BoxDecoration(
                   color: Colors.orange[50],
-                  borderRadius: BorderRadius.circular(12),
+                  borderRadius: AppPaddings.borderRadiusMedium,
                   border: Border.all(
                     color: Colors.orange[200]!,
-                    width: 1,
+                    width: AppPaddings.borderWidthThin,
                   ),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'Missed Today',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w600,
-                        color: Color(0xFF2C3E50),
-                      ),
+                      style: AppTextStyles.titleMedium,
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: AppPaddings.paddingSmall),
                     ...missedReminders.map((reminder) {
                       final timeString =
                           '${reminder.timeOfDay.hour.toString().padLeft(2, '0')}:${reminder.timeOfDay.minute.toString().padLeft(2, '0')}';
                       return Container(
-                        margin: const EdgeInsets.only(bottom: 8),
-                        padding: const EdgeInsets.all(12),
+                        margin: EdgeInsets.only(bottom: AppPaddings.paddingXSmall),
+                        padding: AppPaddings.paddingAllSmall,
                         decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(8),
+                          color: AppColors.cardBackgroundLight,
+                          borderRadius: AppPaddings.borderRadiusSmall,
                         ),
                         child: Row(
                           children: [
                             Text(
                               reminder.habitEmoji,
-                              style: const TextStyle(fontSize: 24),
+                              style: TextStyle(fontSize: AppDimensions.iconMedium),
                             ),
-                            const SizedBox(width: 12),
+                            SizedBox(width: AppPaddings.paddingSmall),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     reminder.habitTitle,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF2C3E50),
-                                    ),
+                                    style: AppTextStyles.bodyMedium,
                                   ),
                                   Text(
                                     timeString,
-                                    style: TextStyle(
-                                      fontSize: 14,
+                                    style: AppTextStyles.labelMedium.copyWith(
                                       color: Colors.grey[600],
                                     ),
                                   ),
@@ -556,9 +536,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     .markShownToday(reminder.id);
                               },
                               style: TextButton.styleFrom(
-                                foregroundColor: const Color(0xFF6B46C1),
+                                foregroundColor: AppColors.buttonPrimary,
                               ),
-                              child: const Text('Done'),
+                              child: Text('Done'),
                             ),
                             // Dismiss button
                             TextButton(
@@ -569,7 +549,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               style: TextButton.styleFrom(
                                 foregroundColor: Colors.grey[600],
                               ),
-                              child: const Text('Dismiss'),
+                              child: Text('Dismiss'),
                             ),
                           ],
                         ),
@@ -582,15 +562,13 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           // Title
           Padding(
-            padding: const EdgeInsets.all(20.0),
+            padding: AppPaddings.paddingAllLarge,
             child: Align(
               alignment: Alignment.centerLeft,
-              child: const Text(
+              child: Text(
                 'Your habits',
-                style: TextStyle(
-                  fontSize: 28,
+                style: AppTextStyles.headlineLarge.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: Color(0xFF2C3E50),
                 ),
               ),
             ),
@@ -609,43 +587,38 @@ class _HomeScreenState extends State<HomeScreen> {
                 if (snapshot.hasError) {
                   return Center(
                     child: Padding(
-                      padding: const EdgeInsets.all(20.0),
+                      padding: AppPaddings.paddingAllLarge,
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Icon(
+                          Icon(
                             Icons.error_outline,
-                            size: 48,
+                            size: AppDimensions.iconXLarge,
                             color: Colors.red,
                           ),
-                          const SizedBox(height: 16),
-                          const Text(
+                          SizedBox(height: AppPaddings.paddingMedium),
+                          Text(
                             'Error loading habits',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF2C3E50),
-                            ),
+                            style: AppTextStyles.titleMedium,
                           ),
-                          const SizedBox(height: 8),
+                          SizedBox(height: AppPaddings.paddingXSmall),
                           Text(
                             snapshot.error.toString(),
                             textAlign: TextAlign.center,
-                            style: TextStyle(
-                              fontSize: 14,
+                            style: AppTextStyles.labelMedium.copyWith(
                               color: Colors.grey[600],
                             ),
                           ),
-                          const SizedBox(height: 16),
+                          SizedBox(height: AppPaddings.paddingMedium),
                           ElevatedButton(
                             onPressed: () {
                               setState(() {});
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF4A90E2),
+                              backgroundColor: AppColors.primary,
                               foregroundColor: Colors.white,
                             ),
-                            child: const Text('Retry'),
+                            child: Text('Retry'),
                           ),
                         ],
                       ),
@@ -655,13 +628,10 @@ class _HomeScreenState extends State<HomeScreen> {
                 
                 // Success state
                 if (!snapshot.hasData || snapshot.data!.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Text(
                       'No habits yet. Add one!',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Color(0xFF2C3E50),
-                      ),
+                      style: AppTextStyles.bodyLarge,
                     ),
                   );
                 }
@@ -669,7 +639,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 final habits = snapshot.data!;
                 
                 return ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  padding: EdgeInsets.symmetric(horizontal: AppPaddings.paddingLarge),
                   itemCount: habits.length,
                   itemBuilder: (context, index) {
                     final habit = habits[index];
@@ -681,15 +651,15 @@ class _HomeScreenState extends State<HomeScreen> {
                       direction: DismissDirection.endToStart,
                       background: Container(
                         alignment: Alignment.centerRight,
-                        padding: const EdgeInsets.only(right: 20),
+                        padding: EdgeInsets.only(right: AppPaddings.paddingLarge),
                         decoration: BoxDecoration(
                           color: Colors.red,
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: AppPaddings.borderRadiusMedium,
                         ),
-                        child: const Icon(
+                        child: Icon(
                           Icons.delete,
                           color: Colors.white,
-                          size: 28,
+                          size: AppDimensions.iconMedium,
                         ),
                       ),
                       confirmDismiss: (direction) async {
@@ -703,23 +673,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                 children: [
                                   Text(
                                     habit.emoji,
-                                    style: const TextStyle(fontSize: 48),
+                                    style: TextStyle(fontSize: AppDimensions.iconXLarge),
                                   ),
-                                  const SizedBox(height: 16),
+                                  SizedBox(height: AppPaddings.paddingMedium),
                                   Text(
                                     'Are you sure you want to delete "${habit.name}"?',
                                     textAlign: TextAlign.center,
-                                    style: const TextStyle(
-                                      fontSize: 16,
-                                      color: Color(0xFF2C3E50),
-                                    ),
+                                    style: AppTextStyles.bodyLarge,
                                   ),
-                                  const SizedBox(height: 8),
-                                  const Text(
+                                  SizedBox(height: AppPaddings.paddingXSmall),
+                                  Text(
                                     'This action cannot be undone.',
                                     textAlign: TextAlign.center,
-                                    style: TextStyle(
-                                      fontSize: 14,
+                                    style: AppTextStyles.labelMedium.copyWith(
                                       color: Colors.grey,
                                     ),
                                   ),
@@ -728,10 +694,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               actions: [
                                 TextButton(
                                   onPressed: () => Navigator.of(dialogContext).pop(false),
-                                  child: const Text(
+                                  child: Text(
                                     'Cancel',
                                     style: TextStyle(
-                                      color: Color(0xFF2C3E50),
+                                      color: AppColors.textPrimary,
                                     ),
                                   ),
                                 ),
@@ -754,16 +720,16 @@ class _HomeScreenState extends State<HomeScreen> {
                       child: GestureDetector(
                         onTap: () => _navigateToHabitDetail(habit),
                         child: Container(
-                          margin: const EdgeInsets.only(bottom: 12),
-                          padding: const EdgeInsets.all(16),
+                          margin: EdgeInsets.only(bottom: AppPaddings.paddingSmall),
+                          padding: AppPaddings.paddingAllMedium,
                           decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
+                            color: AppColors.cardBackgroundLight,
+                            borderRadius: AppPaddings.borderRadiusMedium,
                             boxShadow: [
                               BoxShadow(
                                 color: Colors.black.withAlpha(13),
-                                blurRadius: 8,
-                                offset: const Offset(0, 2),
+                                blurRadius: AppPaddings.shadowBlurMedium,
+                                offset: AppPaddings.shadowOffsetSmall,
                               ),
                             ],
                           ),
@@ -778,20 +744,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                   decoration: BoxDecoration(
                                     shape: BoxShape.circle,
                                     color: isCompleted
-                                        ? const Color(0xFF4A90E2)
+                                        ? AppColors.primary
                                         : Colors.grey[200],
                                     border: Border.all(
                                       color: isCompleted
-                                          ? const Color(0xFF4A90E2)
+                                          ? AppColors.primary
                                           : Colors.grey[400]!,
-                                      width: 2,
+                                      width: AppPaddings.borderWidthMedium,
                                     ),
                                   ),
                                   child: isCompleted
-                                      ? const Icon(
+                                      ? Icon(
                                           Icons.check,
                                           color: Colors.white,
-                                          size: 24,
+                                          size: AppDimensions.iconMedium,
                                         )
                                       : null,
                                 ),
@@ -803,16 +769,13 @@ class _HomeScreenState extends State<HomeScreen> {
                                   children: [
                                     Text(
                                       habit.emoji,
-                                      style: const TextStyle(fontSize: 24),
+                                      style: TextStyle(fontSize: AppDimensions.iconMedium),
                                     ),
-                                    const SizedBox(width: 12),
+                                    SizedBox(width: AppPaddings.paddingSmall),
                                     Expanded(
                                       child: Text(
                                         habit.name,
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                          color: const Color(0xFF2C3E50),
+                                        style: AppTextStyles.bodyMedium.copyWith(
                                           decoration: isCompleted
                                               ? TextDecoration.lineThrough
                                               : null,
@@ -825,17 +788,15 @@ class _HomeScreenState extends State<HomeScreen> {
                               // Streak indicator
                               Row(
                                 children: [
-                                  const Text(
+                                  Text(
                                     '🔥',
                                     style: TextStyle(fontSize: 18),
                                   ),
-                                  const SizedBox(width: 4),
+                                  SizedBox(width: AppPaddings.paddingXSmall),
                                   Text(
                                     '${habit.streak}D',
-                                    style: const TextStyle(
-                                      fontSize: 16,
+                                    style: AppTextStyles.bodyMedium.copyWith(
                                       fontWeight: FontWeight.bold,
-                                      color: Color(0xFF2C3E50),
                                     ),
                                   ),
                                 ],
@@ -851,17 +812,15 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           // Add button
-          const Text(
+          Text(
             'Swipe left to delete',
-            style: TextStyle(
-              fontSize: 14,
+            style: AppTextStyles.labelMedium.copyWith(
               fontWeight: FontWeight.w500,
-              color: Color(0xFF2C3E50),
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: AppPaddings.paddingXSmall),
           Padding(
-            padding: const EdgeInsets.symmetric(vertical: 16),
+            padding: EdgeInsets.symmetric(vertical: AppPaddings.paddingMedium),
             child: FloatingActionButton(
               onPressed: () async {
                 final habitService = HabitService();
@@ -886,11 +845,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   }
                 }
               },
-              backgroundColor: const Color(0xFF4A90E2),
-              child: const Icon(Icons.add, color: Colors.white),
+              backgroundColor: AppColors.primary,
+              child: Icon(Icons.add, color: Colors.white),
             ),
           ),
-          const SizedBox(height: 8),
+          SizedBox(height: AppPaddings.paddingXSmall),
         ],
       ),
       ),
@@ -928,12 +887,12 @@ class _HomeScreenState extends State<HomeScreen> {
       // Bottom navigation bar
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: AppColors.cardBackgroundLight,
           boxShadow: [
             BoxShadow(
               color: Colors.black.withAlpha(26),
-              blurRadius: 10,
-              offset: const Offset(0, -2),
+              blurRadius: AppPaddings.shadowBlurLarge,
+              offset: AppPaddings.shadowOffsetSmall,
             ),
           ],
         ),
@@ -945,7 +904,7 @@ class _HomeScreenState extends State<HomeScreen> {
             });
           },
           type: BottomNavigationBarType.fixed,
-          selectedItemColor: const Color(0xFF4A90E2),
+          selectedItemColor: AppColors.primary,
           unselectedItemColor: Colors.grey[600],
           items: const [
             BottomNavigationBarItem(

@@ -8,6 +8,7 @@ import 'providers/settings_provider.dart';
 import 'providers/reminders_provider.dart';
 import 'constants/app_colors.dart';
 import 'constants/app_text_styles.dart';
+import 'constants/app_dimensions.dart';
 // Your Imports
 import 'screens/profile_screen.dart';
 import 'screens/settings_screen.dart';
@@ -56,8 +57,8 @@ class PerpetuaApp extends StatelessWidget {
       title: 'Perpetua',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-        fontFamily: 'Roboto',
+        primarySwatch: AppColors.primarySwatch,
+        fontFamily: AppDimensions.fontFamily,
             brightness: Brightness.light,
             scaffoldBackgroundColor: AppColors.scaffoldBackgroundLight,
             cardColor: AppColors.cardBackgroundLight,
@@ -72,8 +73,8 @@ class PerpetuaApp extends StatelessWidget {
             ),
           ),
           darkTheme: ThemeData(
-            primarySwatch: Colors.blue,
-            fontFamily: 'Roboto',
+            primarySwatch: AppColors.primarySwatch,
+            fontFamily: AppDimensions.fontFamily,
             brightness: Brightness.dark,
             scaffoldBackgroundColor: AppColors.scaffoldBackgroundDark,
             cardColor: AppColors.cardBackgroundDark,
