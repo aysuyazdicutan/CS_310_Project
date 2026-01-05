@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/habit_service.dart';
 import '../models/habit.dart';
+import '../constants/app_dimensions.dart';
 
 class HabitDetailScreen extends StatefulWidget {
   final String habitId;
@@ -211,7 +212,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFF2C3E50),
-                  fontFamily: 'Roboto',
+                  fontFamily: AppDimensions.fontFamily,
                 ),
               ),
             );
@@ -283,7 +284,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                           fontSize: 12,
                           color: isToday ? const Color(0xFF9B59B6) : const Color(0xFF2C3E50),
                           fontWeight: isToday ? FontWeight.bold : FontWeight.normal,
-                          fontFamily: 'Roboto',
+                          fontFamily: AppDimensions.fontFamily,
                         ),
                       ),
                     ),
@@ -467,7 +468,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                             fontSize: 28,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF2C3E50),
-                            fontFamily: 'Roboto',
+                            fontFamily: AppDimensions.fontFamily,
                           ),
                         ),
                       ],
@@ -495,7 +496,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                           style: TextStyle(
                             fontSize: 16,
                             color: Color(0xFF2C3E50),
-                            fontFamily: 'Roboto',
+                            fontFamily: AppDimensions.fontFamily,
                           ),
                         ),
                         Text(
@@ -504,7 +505,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF2C3E50),
-                            fontFamily: 'Roboto',
+                            fontFamily: AppDimensions.fontFamily,
                           ),
                         ),
                       ],
@@ -524,7 +525,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                           style: TextStyle(
                             fontSize: 16,
                             color: Color(0xFF2C3E50),
-                            fontFamily: 'Roboto',
+                            fontFamily: AppDimensions.fontFamily,
                           ),
                         ),
                         Text(
@@ -533,7 +534,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF2C3E50),
-                            fontFamily: 'Roboto',
+                            fontFamily: AppDimensions.fontFamily,
                           ),
                         ),
                       ],
@@ -556,7 +557,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF9B59B6),
-                        fontFamily: 'Roboto',
+                        fontFamily: AppDimensions.fontFamily,
                       ),
                     ),
                   ),
@@ -567,7 +568,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                       color: Color(0xFF2C3E50),
-                      fontFamily: 'Roboto',
+                      fontFamily: AppDimensions.fontFamily,
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -579,7 +580,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                         fontSize: 24,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF9B59B6),
-                        fontFamily: 'Roboto',
+                        fontFamily: AppDimensions.fontFamily,
                       ),
                     ),
                   ),
@@ -619,7 +620,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                           style: TextStyle(
                             fontSize: 14,
                             color: Color(0xFF2C3E50),
-                            fontFamily: 'Roboto',
+                            fontFamily: AppDimensions.fontFamily,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -629,7 +630,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF2C3E50),
-                            fontFamily: 'Roboto',
+                            fontFamily: AppDimensions.fontFamily,
                           ),
                         ),
                       ],
@@ -641,7 +642,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                           style: TextStyle(
                             fontSize: 14,
                             color: Color(0xFF2C3E50),
-                            fontFamily: 'Roboto',
+                            fontFamily: AppDimensions.fontFamily,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -651,7 +652,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF2C3E50),
-                            fontFamily: 'Roboto',
+                            fontFamily: AppDimensions.fontFamily,
                           ),
                         ),
                       ],
@@ -663,7 +664,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                           style: TextStyle(
                             fontSize: 14,
                             color: Color(0xFF2C3E50),
-                            fontFamily: 'Roboto',
+                            fontFamily: AppDimensions.fontFamily,
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -673,7 +674,7 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF2C3E50),
-                            fontFamily: 'Roboto',
+                            fontFamily: AppDimensions.fontFamily,
                           ),
                         ),
                       ],
@@ -692,4 +693,8 @@ class _HabitDetailScreenState extends State<HabitDetailScreen> {
     );
   }
 }
+
+
+
+
 

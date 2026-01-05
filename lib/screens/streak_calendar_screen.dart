@@ -4,6 +4,7 @@ import '../services/habit_service.dart';
 import '../providers/auth_provider.dart';
 import '../models/habit.dart';
 import '../constants/app_colors.dart';
+import '../constants/app_dimensions.dart';
 
 class StreakCalendarScreen extends StatefulWidget {
   const StreakCalendarScreen({super.key});
@@ -107,7 +108,7 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
                   style: const TextStyle(
                     fontSize: 10,
                     color: Color(0xFF2C3E50),
-                    fontFamily: 'Roboto',
+                    fontFamily: AppDimensions.fontFamily,
                   ),
                 ),
               ),
@@ -230,7 +231,7 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
                           fontSize: 28,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF2C3E50),
-                          fontFamily: 'Roboto',
+                          fontFamily: AppDimensions.fontFamily,
                         ),
                       ),
                     ),
@@ -251,7 +252,7 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF9B59B6),
-                          fontFamily: 'Roboto',
+                          fontFamily: AppDimensions.fontFamily,
                         ),
                       ),
                     ),
@@ -262,7 +263,7 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
                         fontSize: 18,
                         fontWeight: FontWeight.w600,
                         color: Color(0xFF2C3E50),
-                        fontFamily: 'Roboto',
+                        fontFamily: AppDimensions.fontFamily,
                       ),
                     ),
                     const SizedBox(width: 16),
@@ -274,7 +275,7 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
                           fontSize: 24,
                           fontWeight: FontWeight.bold,
                           color: Color(0xFF9B59B6),
-                          fontFamily: 'Roboto',
+                          fontFamily: AppDimensions.fontFamily,
                         ),
                       ),
                     ),
@@ -317,7 +318,7 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
                                 fontSize: 12,
                                 fontWeight: FontWeight.bold,
                                 color: Color(0xFF2C3E50),
-                                fontFamily: 'Roboto',
+                                fontFamily: AppDimensions.fontFamily,
                               ),
                             ),
                           );
@@ -370,13 +371,13 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'Tap to show/hide habits',
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: Color(0xFF2C3E50),
-                          fontFamily: 'Roboto',
+                          color: AppColors.textPrimary,
+                          fontFamily: AppDimensions.fontFamily,
                         ),
                       ),
                       const SizedBox(height: 12),
@@ -444,7 +445,7 @@ class _StreakCalendarScreenState extends State<StreakCalendarScreen> {
                                       style: const TextStyle(
                                         fontSize: 14,
                                         color: Color(0xFF2C3E50),
-                                        fontFamily: 'Roboto',
+                                        fontFamily: AppDimensions.fontFamily,
                                       ),
                                     ),
                                   ),

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../constants/app_dimensions.dart';
 
 class HabitSelectionScreen extends StatefulWidget {
   final List<Map<String, dynamic>> allHabits;
@@ -88,7 +89,7 @@ class _HabitSelectionScreenState extends State<HabitSelectionScreen> {
                         fontSize: 28,
                         fontWeight: FontWeight.bold,
                         color: Color(0xFF2C3E50),
-                        fontFamily: 'Roboto',
+                        fontFamily: AppDimensions.fontFamily,
                       ),
                     ),
                   ),
@@ -134,7 +135,7 @@ class _HabitSelectionScreenState extends State<HabitSelectionScreen> {
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
                                 color: Color(0xFF2C3E50),
-                                fontFamily: 'Roboto',
+                                fontFamily: AppDimensions.fontFamily,
                               ),
                             ),
                           ),
@@ -182,7 +183,7 @@ class _HabitSelectionScreenState extends State<HabitSelectionScreen> {
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Color(0xFF2C3E50),
-                            fontFamily: 'Roboto',
+                            fontFamily: AppDimensions.fontFamily,
                           ),
                         ),
                 ),
