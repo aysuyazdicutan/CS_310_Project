@@ -179,8 +179,13 @@ flutter test --coverage
 
 **Test Coverage**
 
-* Unit Tests: test/habit_test.dart (Habit model and Firestore conversion)
-* Widget Tests: test/widget_test.dart (WelcomeScreen UI and interactions)
+- **Unit Tests** (`test/habit_test.dart`):
+  - Tests Habit model creation with default values
+  - Tests Habit to Firestore data conversion
+  
+- **Widget Tests** (`test/widget_test.dart`):
+  - Tests WelcomeScreen displays correct UI elements (welcome text, title, slogan, button)
+  - Tests Get Started button is tappable and functional
 
 ---
 
